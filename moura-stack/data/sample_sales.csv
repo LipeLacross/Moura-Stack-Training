@@ -1,0 +1,11 @@
+order_id,region,product,quantity,unit_price
+1,Norte,Bateria A,10,200
+2,Sul,Bateria B,5,350
+3,Nordeste,Bateria C,8,180
+4,Sudeste,Bateria A,12,200
+5,Centro-Oeste,Bateria D,3,500
+6,Nordeste,Bateria B,7,350
+7,Sul,Bateria C,15,180
+8,Sudeste,Bateria D,2,500
+9,Norte,Bateria B,9,350
+10,Nordeste,Bateria A,11,200

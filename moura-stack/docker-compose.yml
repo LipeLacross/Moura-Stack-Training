@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  moura:
+    build: .
+    env_file: .env
+    ports:
+      - "${API_PORT:-8000}:8000"
+      - "${STREAMLIT_SERVER_PORT:-8501}:8501"
+    volumes:
+      - .:/app
