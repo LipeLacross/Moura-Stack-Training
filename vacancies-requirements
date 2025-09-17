@@ -1,0 +1,39 @@
+✅ Estágio em Análise de Dados
+
+O que a vaga pede vs o que o projeto tem:
+
+SQL (consultas, stored procedures, triggers) → sql/01_init.sql cria tabela sales, trigger (set_total) e procedure (upsert_product_revenue).
+
+Dashboards / relatórios interativos → Streamlit + Plotly + Seaborn + Matplotlib; export para Excel.
+
+Power BI Service → embed configurável no .env, endpoint /gold/export gera Parquet/CSV (camada Gold para importar no Power BI).
+
+Automação / Power Automate → endpoint /etl/run que pode ser usado como webhook.
+
+Python (bibliotecas) → pandas, numpy, SciPy, Statsmodels, Scikit-learn (tratamento, análise estatística, regressão).
+
+DBT → projeto mínimo dbt/ com stg_sales (silver) e fct_sales (gold).
+
+Big Data → job PySpark (app/etl/spark_job.py) para processar em larga escala.
+
+
+✅ Analista de Desenvolvimento Web JR
+
+O que a vaga pede vs o que o projeto tem:
+
+Desenvolvimento back-end → FastAPI estruturado em módulos, rotas REST, Pydantic, SQLAlchemy.
+
+APIs REST → /health, /metrics/*, /stats/*, /ml/*, /etl/run, /gold/export.
+
+Banco de dados relacionais → PostgreSQL (SQLAlchemy + psycopg2).
+
+Noções de algoritmos / dados → tratamento de dados, regressão linear, OLS.
+
+Versionamento (Git/GitHub) → projeto organizado para repositório público.
+
+Testes automatizados → pytest para API, stats e ML.
+
+Containers → Dockerfile + docker-compose.
+
+CI/CD ready → scripts de lint (Ruff, Black), testes e build.
+
