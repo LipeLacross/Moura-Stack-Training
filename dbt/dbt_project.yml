@@ -1,0 +1,13 @@
+name: moura_stack
+version: 1.0.0
+config-version: 2
+profile: moura_stack
+model-paths: ["dbt/models"]
+models:
+  moura_stack:
+    +materialized: view
+    staging:
+      +schema: stg
+    marts:
+      +schema: fct
+
