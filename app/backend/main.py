@@ -7,6 +7,10 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from app.backend.routers import health, metrics, stats, ml, etl, gold, extras
 from app.services.data import load_sales_df, compute_summary
+from app.core.utils import init_db_if_needed
+
+# Inicializa o banco de dados, se necessário
+init_db_if_needed()
 
 app = FastAPI(title="Moura Stack API", version="1.2.0")
 
