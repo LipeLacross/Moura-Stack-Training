@@ -12,9 +12,10 @@ def run_spark_job(input_path: str = "data/sample_sales.csv", output_path: str = 
     df = df.withColumn("quantity", col("quantity").cast("int"))
     df = df.withColumn("unit_price", col("unit_price").cast("double"))
     df = df.withColumn("total", expr("quantity * unit_price"))
+    rows = df.count()
     df.write.mode("overwrite").parquet(output_path)
     spark.stop()
-    print(f"Spark job concluído. Output: {output_path}")
+    return {"rows": rows, "dest": output_path}
 
 if __name__ == "__main__":
-    run_spark_job()
+    print(run_spark_job())

@@ -9,23 +9,22 @@ Projeto-portfólio para uma vaga de **Estágio/Dev no Grupo Moura**, demonstrand
 ---
 
 ## 🔨 Funcionalidades do Projeto
-- **Backend (FastAPI)**  
-  - Rotas: `/health`, `/metrics/sales`, `/metrics/summary`, `/stats/pearson`, `/stats/ols`, `/ml/train`, `/ml/predict`, `/etl/run`, `/gold/export`.  
+- **FastAPI & Jinja**
+  - Rotas: `/health`, `/metrics/sales`, `/metrics/summary`, `/stats/pearson`, `/stats/ols`, `/ml/train`, `/ml/predict`, `/etl/run`, `/gold/export`.
   - **PostgreSQL**: conexão via SQLAlchemy; **tabela `sales`** com **trigger** (`set_total`) e **procedure** (`upsert_product_revenue`) em `sql/01_init.sql`.
-- **Frontend (Streamlit)**  
-  - Tabela de amostra, KPIs, **gráficos Plotly** (interativo) e **Seaborn/Matplotlib** (estático).  
-  - Embed de **Power BI** via `POWER_BI_EMBED_URL`.  
+  - Tabela de amostra, KPIs, **gráficos Plotly** (interativo) e **Seaborn/Matplotlib** (estático).
+  - Embed de **Power BI** via `POWER_BI_EMBED_URL`.
   - Botões para rodar **Pearson/OLS**, **treinar/predizer** (Scikit-learn), disparar **ETL** e **export Gold**.
-- **ETL & Big Data**  
-  - **Prefect**: `app/etl/flow_etl.py` gera **Parquet** (camada Gold).  
+- **ETL & Big Data**
+  - **Prefect**: `app/etl/flow_etl.py` gera **Parquet** (camada Gold).
   - **PySpark**: `app/etl/spark_job.py` (opcional) processa CSV → Parquet com cálculo de `total`.
-- **Analytics & ML**  
-  - **SciPy** (correlação Pearson), **Statsmodels** (OLS), **Scikit-learn** (Regressão Linear).  
+- **Analytics & ML**
+  - **SciPy** (correlação Pearson), **Statsmodels** (OLS), **Scikit-learn** (Regressão Linear).
   - **OpenPyXL** para export Excel a partir do Streamlit.
-- **dbt (Mínimo Viável)**  
-  - `stg_sales` (silver) e `fct_sales` (gold) em `dbt/models/`.  
-- **Operacional**  
-  - Testes `pytest`, lint `ruff`, formatador `black`, **Dockerfile** e **docker-compose**.
+- **dbt (Mínimo Viável)**
+  - `stg_sales` (silver) e `fct_sales` (gold) em `dbt/models/`.
+- **Operacional**
+     **Dockerfile** e **docker-compose**.
 
 ---
 
@@ -40,15 +39,15 @@ Projeto-portfólio para uma vaga de **Estágio/Dev no Grupo Moura**, demonstrand
 ---
 
 ## ✔️ Técnicas e Tecnologias Utilizadas
-- **Linguagem:** Python 3.11+  
-- **Backend:** FastAPI, Pydantic, Uvicorn, SQLAlchemy  
-- **Banco de Dados:** PostgreSQL (psycopg2) — **consultas, trigger e procedure**  
-- **Frontend/BI:** Streamlit, **Power BI embed**  
-- **Dados/Análises:** Pandas, NumPy, Plotly, Matplotlib, Seaborn, SciPy, Statsmodels  
-- **ML:** Scikit-learn (regressão linear)  
-- **ETL/Big Data:** Prefect, PySpark, Parquet (PyArrow)  
-- **Modelagem de Dados:** dbt (silver/gold)  
-- **Dev/Qualidade:** pytest, requests, Ruff, Black, Docker
+- **Linguagem:** Python 3.11+
+- **Backend:** FastAPI, Pydantic, Uvicorn, SQLAlchemy
+- **Banco de Dados:** PostgreSQL (psycopg2) — **consultas, trigger e procedure**
+- **Frontend/BI:** Jinja **Power BI embed**
+- **Dados/Análises:** Pandas, NumPy, Plotly, Matplotlib, Seaborn, SciPy, Statsmodels
+- **ML:** Scikit-learn (regressão linear)
+- **ETL/Big Data:** Prefect, PySpark, Parquet (PyArrow)
+- **Modelagem de Dados:** dbt (silver/gold)
+- **Dev/Qualidade:**  Black, Docker
 
 ---
 
@@ -217,3 +216,4 @@ docker compose up --build
 * **Python (bibliotecas)** → Pandas, NumPy, SciPy, Statsmodels, Scikit-learn.
 * **Big Data** → **PySpark** gerando **Parquet**.
 * **dbt (conceitos)** → `stg_sales` (silver) e `fct_sales` (gold).
+

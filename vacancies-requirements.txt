@@ -4,7 +4,7 @@ O que a vaga pede vs o que o projeto tem:
 
 SQL (consultas, stored procedures, triggers) → sql/01_init.sql cria tabela sales, trigger (set_total) e procedure (upsert_product_revenue).
 
-Dashboards / relatórios interativos → Streamlit + Plotly + Seaborn + Matplotlib; export para Excel.
+Dashboards / relatórios interativos → Plotly + Seaborn + Matplotlib; export para Excel.
 
 Power BI Service → embed configurável no .env, endpoint /gold/export gera Parquet/CSV (camada Gold para importar no Power BI).
 
@@ -35,5 +35,5 @@ Testes automatizados → pytest para API, stats e ML.
 
 Containers → Dockerfile + docker-compose.
 
-CI/CD ready → scripts de lint (Ruff, Black), testes e build.
+CI/CD ready → scripts de lint Black, testes e build.
 

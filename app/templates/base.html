@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Moura Stack Dashboard{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#0f1115; color:#f5f5f5; }
+    header { background:#161a21; padding:16px 32px; display:flex; justify-content:space-between; align-items:center; }
+    header h1 { margin:0; font-size:20px; }
+    a, a:visited { color:#4dabf7; text-decoration:none; }
+    .container { padding:24px 32px; }
+    .grid { display:grid; gap:16px; }
+    .cards-3 { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+    .card { background:#1e2430; border:1px solid #2c3442; border-radius:8px; padding:16px; }
+    .kpi { font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:#adb5bd; }
+    .kpi-value { font-size:22px; font-weight:600; margin-top:4px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:6px 8px; border-bottom:1px solid #2a323e; font-size:13px; }
+    th { text-align:left; color:#ced4da; }
+    iframe { border:0; width:100%; }
+    footer { margin-top:40px; padding:24px 32px; font-size:12px; color:#868e96; text-align:center; }
+    button { background:#2563eb; border:none; color:#fff; padding:8px 14px; border-radius:4px; cursor:pointer; font-size:13px; }
+    form.inline { display:inline-block; margin:0 8px 8px 0; }
+    input { background:#1e2430; border:1px solid #2c3442; color:#f5f5f5; padding:6px 8px; border-radius:4px; font-size:13px; }
+    .section-title { margin:32px 0 12px; font-size:18px; }
+    .alert { padding:10px 14px; border-radius:6px; background:#2a323e; font-size:13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔋 Moura Stack</h1>
+    <nav>
+      <a href="/">Dashboard</a>
+      &nbsp;|&nbsp;
+      <a href="/docs" target="_blank">Docs API</a>
+    </nav>
+  </header>
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+  <footer>
+    Moura Stack • FastAPI • {{ year }}
+  </footer>
+</body>
+</html>
+

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Dashboard • Moura Stack{% endblock %}
+{% block content %}
+<h2>Visão Geral</h2>
+<div class="grid cards-3">
+  <div class="card"><div class="kpi">Receita Total</div><div class="kpi-value">R$ {{ '%.2f'|format(summary.total_revenue) }}</div></div>
+  <div class="card"><div class="kpi">Qtd Total</div><div class="kpi-value">{{ summary.total_quantity }}</div></div>
+  <div class="card"><div class="kpi">Ticket Médio</div><div class="kpi-value">R$ {{ '%.2f'|format(summary.avg_ticket) }}</div></div>
+</div>
+<div class="card" style="margin-top:20px;">
+  <h3>Top Produtos</h3>
+  {% if summary.top_products %}
+    <ul>
+      {% for p in summary.top_products %}<li>{{ p }}</li>{% endfor %}
+    </ul>
+  {% else %}
+    <div class="alert">Sem dados.</div>
+  {% endif %}
+</div>
+
+<h2 class="section-title">Gráfico</h2>
+<div class="card">{{ plot_html|safe }}</div>
+
+<h2 class="section-title">Estatística & ML</h2>
+<div class="card">
+  <div id="stats-output" class="alert">Resultados aparecerão aqui.</div>
+  <button onclick="runPearson()">Pearson</button>
+  <button onclick="runOLS()">OLS</button>
+  <button onclick="trainModel()">Treinar Modelo</button>
+  <form class="inline" onsubmit="predict(event)">
+    <input type="number" name="quantity" placeholder="quantity" min="0" value="10" />
+    <input type="number" step="0.01" name="unit_price" placeholder="unit_price" value="200" />
+    <button type="submit">Prever</button>
+  </form>
+</div>
+
+<h2 class="section-title">Operações</h2>
+<div class="card">
+  <div id="ops-output" class="alert">Status.</div>
+  <button onclick="runETL()">Rodar ETL</button>
+  <button onclick="exportGold()">Exportar Gold</button>
+</div>
+
+{% if power_bi_url %}
+<h2 class="section-title">Power BI</h2>
+<div class="card">
+  <iframe src="{{ power_bi_url }}" height="600"></iframe>
+</div>
+{% endif %}
+
+<script>
+async function apiGet(path){
+  const r = await fetch(path); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+async function apiPost(path, body=null){
+  const opts = {method:'POST', headers:{'Content-Type':'application/json'}}; if(body) opts.body = JSON.stringify(body); const r = await fetch(path, opts); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+
+async function runPearson(){ setMsg('stats-output','Executando...'); try{const d=await apiGet('/stats/pearson'); setMsg('stats-output',`r=${d.pearson_r.toFixed(4)} p=${d.p_value.toFixed(4)}`);}catch(e){ setMsg('stats-output','Erro: '+e.message);}}
+async function runOLS(){ setMsg('stats-output','Executando...'); try{const d=await apiGet('/stats/ols'); setMsg('stats-output',`R²=${d.r2.toFixed(4)} Params: ${JSON.stringify(d.params)}`);}catch(e){ setMsg('stats-output','Erro: '+e.message);}}
+async function trainModel(){ setMsg('stats-output','Treinando...'); try{const d=await apiPost('/ml/train'); setMsg('stats-output',`Treinado • R²=${d.r2.toFixed(4)}`);}catch(e){ setMsg('stats-output','Erro: '+e.message);}}
+async function predict(ev){ ev.preventDefault(); const f=ev.target; setMsg('stats-output','Prevendo...'); try{const d=await apiPost('/ml/predict',{quantity: +f.quantity.value, unit_price: +f.unit_price.value}); setMsg('stats-output',`y_pred ≈ R$ ${d.y_pred.toFixed(2)}`);}catch(e){ setMsg('stats-output','Erro: '+e.message);}}
+async function runETL(){ setMsg('ops-output','Rodando ETL...'); try{const d=await apiPost('/etl/run'); setMsg('ops-output',`ETL OK: ${JSON.stringify(d)}`);}catch(e){ setMsg('ops-output','Erro: '+e.message);}}
+async function exportGold(){ setMsg('ops-output','Exportando...'); try{const d=await apiPost('/gold/export'); setMsg('ops-output',`Export OK: ${JSON.stringify(d)}`);}catch(e){ setMsg('ops-output','Erro: '+e.message);}}
+function setMsg(id,msg){ document.getElementById(id).textContent = msg; }
+</script>
+{% endblock %}
