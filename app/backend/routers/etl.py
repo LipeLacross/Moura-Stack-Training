@@ -1,6 +1,6 @@
 from __future__ import annotations
 from fastapi import APIRouter
-from app.etl.flow_etl import etl_sales
+from app.backend.routers.flow_etl import etl_sales
 
 router = APIRouter(prefix="/etl", tags=["etl"])
 
