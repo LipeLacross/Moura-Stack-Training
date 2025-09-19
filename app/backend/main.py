@@ -8,9 +8,20 @@ from fastapi.templating import Jinja2Templates
 from app.backend.routers import health, metrics, stats, ml, etl, gold, extras
 from app.services.data import load_sales_df, compute_summary
 from app.core.utils import init_db_if_needed
+import logging
 
-# Inicializa o banco de dados, se necessário
-init_db_if_needed()
+try:
+    # Inicializa o banco de dados, se necessário
+    init_db_if_needed()
+    logging.info("[STARTUP] Banco inicializado ou já existente.")
+except Exception as e:
+    logging.error(f"[STARTUP] Erro ao inicializar banco: {e}")
+
+try:
+    templates = Jinja2Templates(directory="app/templates")
+    logging.info("[STARTUP] Templates Jinja2 inicializados.")
+except Exception as e:
+    logging.error(f"[STARTUP] Erro ao inicializar templates: {e}")
 
 app = FastAPI(title="Moura Stack API", version="1.2.0")
 
@@ -21,8 +32,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/", response_class=HTMLResponse)
 def dashboard(request: Request):  # type: ignore[override]
