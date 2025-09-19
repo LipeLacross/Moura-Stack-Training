@@ -335,6 +335,38 @@ group by product;</pre>
   </div>
 </div>
 
+<!-- Ações -->
+<div class="mb-8 bg-card p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Ações</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- ML Train -->
+    <div class="flex gap-2 items-center">
+      <button onclick="postAction('/train', 'Treinar modelo ML')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Treinar modelo ML</button>
+      <button onclick="copyCurl('/train', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
+    </div>
+    <!-- ML Predict -->
+    <div class="flex gap-2 items-center">
+      <button onclick="postAction('/predict', 'Predição ML', {quantity: 10, unit_price: 100})" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Predição ML</button>
+      <button onclick="copyCurl('/predict', 'POST', {quantity: 10, unit_price: 100})" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
+    </div>
+    <!-- ETL Run -->
+    <div class="flex gap-2 items-center">
+      <button onclick="postAction('/run', 'Executar ETL')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Executar ETL</button>
+      <button onclick="copyCurl('/run', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
+    </div>
+    <!-- Gold Export -->
+    <div class="flex gap-2 items-center">
+      <button onclick="postAction('/export', 'Exportar Gold')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Exportar Gold</button>
+      <button onclick="copyCurl('/export', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
+    </div>
+    <!-- Spark Run -->
+    <div class="flex gap-2 items-center">
+      <button onclick="postAction('/spark/run', 'Executar Spark')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Executar Spark</button>
+      <button onclick="copyCurl('/spark/run', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // Dados iniciais
   const salesData = {{ sales|tojson|safe }};
@@ -346,481 +378,78 @@ group by product;</pre>
   let currentSort = { column: 'date', direction: 'desc' };
   let filteredData = [...salesData];
   
-  // Inicialização
-  document.addEventListener('DOMContentLoaded', function() {
-    // Inicializa os gráficos
-    initCharts();
-    
-    // Configura os filtros
-    setupFilters();
-    
-    // Configura a ordenação da tabela
-    setupSorting();
-    
-    // Configura a paginação
-    setupPagination();
-    
-    // Configura a busca
-    document.getElementById('search-sales').addEventListener('input', filterTable);
-    
-    // Configura os botões de período
-    document.querySelectorAll('.time-filter-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
-        this.classList.add('bg-primary', 'text-white');
-        updateCharts(this.dataset.period);
-      });
-    });
-    
-    // Inicializa a tabela
-    updateTable();
+  // Utilitário para buscar dados do backend
+async function fetchData(endpoint, params = {}) {
+  const url = new URL(endpoint, window.location.origin);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== null && v !== undefined && v !== '') url.searchParams.append(k, v);
   });
-  
-  // Inicializa os gráficos
-  function initCharts() {
-    // Gráfico de receita
-    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-    window.revenueChart = new Chart(revenueCtx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Receita (R$)',
-          data: [],
-          borderColor: 'rgb(59, 130, 246)',
-          tension: 0.3,
-          fill: true,
-          backgroundColor: 'rgba(59, 130, 246, 0.1)'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          },
-          legend: {
-            position: 'top',
-          },
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return 'R$ ' + value.toLocaleString();
-              }
-            }
-          }
-        }
-      }
-    });
-    
-    // Gráfico de categorias
-    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    window.categoryChart = new Chart(categoryCtx, {
-      type: 'doughnut',
-      data: {
-        labels: [],
-        datasets: [{
-          data: [],
-          backgroundColor: [
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(245, 158, 11, 0.8)',
-            'rgba(239, 68, 68, 0.8)',
-            'rgba(139, 92, 246, 0.8)'
-          ],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'right',
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const label = context.label || '';
-                const value = context.raw || 0;
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = Math.round((value / total) * 100);
-                return `${label}: R$ ${value.toLocaleString()} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
-    });
-    
-    // Atualiza os gráficos com os dados iniciais
-    updateCharts('month');
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('Erro ao buscar dados');
+  return await resp.json();
+}
+
+// Atualiza KPIs, gráficos e tabela conforme filtros
+async function updateDashboard() {
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+  const product = document.getElementById('product-filter').value;
+  const searchText = document.getElementById('search-sales').value;
+
+  // KPIs
+  try {
+    const summary = await fetchData('/api/summary', {start_date: startDate, end_date: endDate, product});
+    document.querySelector('#revenue-kpi .text-2xl').textContent = `R$ ${summary.total_revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+    document.querySelector('#quantity-kpi .text-2xl').textContent = summary.total_quantity.toLocaleString('pt-BR');
+    document.querySelector('#avg-ticket-kpi .text-2xl').textContent = `R$ ${summary.avg_ticket.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+  } catch (e) {
+    showToast('Erro ao buscar KPIs', 'error');
   }
-  
-  // Atualiza os gráficos com base no período selecionado
-  function updateCharts(period) {
-    // Simula dados para o exemplo
-    const now = new Date();
-    let labels = [];
-    let revenueData = [];
-    
-    if (period === 'week') {
-      // Últimos 7 dias
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(now.getDate() - i);
-        labels.push(date.toLocaleDateString('pt-BR', { weekday: 'short' }));
-        revenueData.push(Math.floor(Math.random() * 10000) + 5000);
-      }
-    } else if (period === 'month') {
-      // Últimos 30 dias
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(now.getDate() - i);
-        if (i % 5 === 0) {
-          labels.push(date.toLocaleDateString('pt-BR', { day: '2-digit' }));
-        } else {
-          labels.push('');
-        }
-        revenueData.push(Math.floor(Math.random() * 5000) + 2000);
-      }
-    } else {
-      // Últimos 12 meses
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date();
-        date.setMonth(now.getMonth() - i);
-        labels.push(date.toLocaleDateString('pt-BR', { month: 'short' }));
-        revenueData.push(Math.floor(Math.random() * 15000) + 10000);
-      }
-    }
-    
-    // Atualiza o gráfico de receita
-    window.revenueChart.data.labels = labels;
-    window.revenueChart.data.datasets[0].data = revenueData;
+
+  // Gráfico de receita
+  try {
+    const period = document.querySelector('.time-filter-btn.bg-primary')?.dataset.period || 'month';
+    const revenue = await fetchData('/api/charts/revenue', {period, product});
+    window.revenueChart.data.labels = revenue.labels;
+    window.revenueChart.data.datasets[0].data = revenue.data;
     window.revenueChart.update();
-    
-    // Atualiza o gráfico de categorias (dados de exemplo)
-    const categories = ['Baterias', 'Autopeças', 'Serviços', 'Acessórios', 'Outros'];
-    const categoryData = categories.map(() => Math.floor(Math.random() * 10000) + 2000);
-    
-    window.categoryChart.data.labels = categories;
-    window.categoryChart.data.datasets[0].data = categoryData;
+  } catch (e) {
+    showToast('Erro ao buscar gráfico de receita', 'error');
+  }
+
+  // Gráfico de categorias
+  try {
+    const categories = await fetchData('/api/charts/categories', {start_date: startDate, end_date: endDate});
+    window.categoryChart.data.labels = categories.labels;
+    window.categoryChart.data.datasets[0].data = categories.data;
     window.categoryChart.update();
-    
-    // Atualiza os KPIs
-    updateKPIs(revenueData, categoryData);
+  } catch (e) {
+    showToast('Erro ao buscar gráfico de categorias', 'error');
   }
-  
-  // Atualiza os KPIs com base nos dados dos gráficos
-  function updateKPIs(revenueData, categoryData) {
-    const totalRevenue = revenueData.reduce((a, b) => a + b, 0);
-    const totalQuantity = Math.floor(totalRevenue / 100);
-    const avgTicket = totalRevenue / (totalQuantity || 1);
-    
-    // Atualiza os valores
-    document.querySelector('#revenue-kpi .text-2xl').textContent = `R$ ${totalRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.querySelector('#quantity-kpi .text-2xl').textContent = totalQuantity.toLocaleString('pt-BR');
-    document.querySelector('#avg-ticket-kpi .text-2xl').textContent = `R$ ${avgTicket.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    
-    // Atualiza as tendências (exemplo aleatório)
-    const trends = document.querySelectorAll('.trend-value');
-    trends.forEach(trend => {
-      const change = (Math.random() * 20 - 5).toFixed(1);
-      const isPositive = change >= 0;
-      const arrow = trend.previousElementSibling;
-      
-      trend.textContent = `${Math.abs(change)}%`;
-      trend.className = `trend-value text-xs mt-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`;
-      arrow.textContent = isPositive ? '↑' : '↓';
-      arrow.className = `trend-arrow ${isPositive ? 'text-green-500' : 'text-red-500'}`;
-    });
-  }
-  
-  // Configura os filtros
-  function setupFilters() {
-    // Define as datas padrão (últimos 30 dias)
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 30);
-    
-    // Formata as datas para o input date (YYYY-MM-DD)
-    document.getElementById('start-date').valueAsDate = startDate;
-    document.getElementById('end-date').valueAsDate = endDate;
-    
-    // Adiciona o evento de clique no botão de aplicar filtros
-    document.getElementById('apply-filters').addEventListener('click', applyFilters);
-  }
-  
-  // Aplica os filtros
-  function applyFilters() {
-    const startDate = new Date(document.getElementById('start-date').value);
-    const endDate = new Date(document.getElementById('end-date').value);
-    const productFilter = document.getElementById('product-filter').value;
-    
-    // Filtra os dados
-    filteredData = salesData.filter(sale => {
-      const saleDate = new Date(sale.date);
-      const matchesDate = (!startDate || saleDate >= startDate) && 
-                         (!endDate || saleDate <= endDate);
-      const matchesProduct = !productFilter || sale.product === productFilter;
-      
-      return matchesDate && matchesProduct;
-    });
-    
-    // Atualiza a tabela e a paginação
-    currentPage = 1;
-    updateTable();
-    updatePagination();
-    
-    // Atualiza os gráficos (simulação)
-    updateCharts('month');
-  }
-  
-  // Configura a ordenação da tabela
-  function setupSorting() {
-    document.querySelectorAll('.sortable').forEach(header => {
-      header.addEventListener('click', () => {
-        const column = header.dataset.sort;
-        const isCurrentColumn = currentSort.column === column;
-        
-        // Alterna a direção se for a mesma coluna
-        currentSort = {
-          column,
-          direction: isCurrentColumn && currentSort.direction === 'asc' ? 'desc' : 'asc'
-        };
-        
-        // Atualiza os indicadores visuais
-        document.querySelectorAll('.sort-indicator').forEach(indicator => {
-          indicator.textContent = '';
-        });
-        
-        const indicator = header.querySelector('.sort-indicator');
-        indicator.textContent = currentSort.direction === 'asc' ? '↑' : '↓';
-        
-        // Ordena os dados
-        sortData();
-        updateTable();
-      });
-    });
-  }
-  
-  // Ordena os dados com base na coluna e direção atuais
-  function sortData() {
-    filteredData.sort((a, b) => {
-      let valueA, valueB;
-      
-      switch(currentSort.column) {
-        case 'date':
-          valueA = new Date(a.date);
-          valueB = new Date(b.date);
-          break;
-        case 'product':
-          valueA = a.product.toLowerCase();
-          valueB = b.product.toLowerCase();
-          break;
-        case 'quantity':
-          valueA = parseFloat(a.quantity);
-          valueB = parseFloat(b.quantity);
-          break;
-        case 'price':
-          valueA = parseFloat(a.unit_price);
-          valueB = parseFloat(b.unit_price);
-          break;
-        case 'total':
-          valueA = parseFloat(a.total);
-          valueB = parseFloat(b.total);
-          break;
-        default:
-          valueA = a[0];
-          valueB = b[0];
-      }
-      
-      if (valueA < valueB) {
-        return currentSort.direction === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return currentSort.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
-  
-  // Configura a paginação
-  function setupPagination() {
-    document.getElementById('prev-page').addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        updateTable();
-        updatePagination();
-      }
-    });
-    
-    document.getElementById('next-page').addEventListener('click', () => {
-      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-      if (currentPage < totalPages) {
-        currentPage++;
-        updateTable();
-        updatePagination();
-      }
-    });
-    
-    // Versão mobile
-    document.getElementById('prev-page-mobile').addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        updateTable();
-        updatePagination();
-      }
-    });
-    
-    document.getElementById('next-page-mobile').addEventListener('click', () => {
-      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-      if (currentPage < totalPages) {
-        currentPage++;
-        updateTable();
-        updatePagination();
-      }
-    });
-    
-    updatePagination();
-  }
-  
-  // Atualiza a exibição da paginação
-  function updatePagination() {
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / rowsPerPage);
-    
-    // Atualiza os contadores
-    const startItem = (currentPage - 1) * rowsPerPage + 1;
-    const endItem = Math.min(startItem + rowsPerPage - 1, totalItems);
-    
-    document.getElementById('start-item').textContent = startItem;
-    document.getElementById('end-item').textContent = endItem;
-    document.getElementById('total-items').textContent = totalItems;
-    
-    // Atualiza os botões de navegação
-    document.getElementById('prev-page').disabled = currentPage === 1;
-    document.getElementById('next-page').disabled = currentPage === totalPages;
-    document.getElementById('prev-page-mobile').disabled = currentPage === 1;
-    document.getElementById('next-page-mobile').disabled = currentPage === totalPages;
-    
-    // Atualiza os números da paginação
-    const paginationContainer = document.getElementById('pagination-numbers');
-    paginationContainer.innerHTML = '';
-    
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    
-    // Botão primeira página
-    if (startPage > 1) {
-      const firstPageBtn = document.createElement('button');
-      firstPageBtn.textContent = '1';
-      firstPageBtn.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0';
-      firstPageBtn.addEventListener('click', () => {
-        currentPage = 1;
-        updateTable();
-        updatePagination();
-      });
-      paginationContainer.appendChild(firstPageBtn);
-      
-      if (startPage > 2) {
-        const ellipsis = document.createElement('span');
-        ellipsis.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700';
-        ellipsis.textContent = '...';
-        paginationContainer.appendChild(ellipsis);
-      }
-    }
-    
-    // Botões das páginas
-    for (let i = startPage; i <= endPage; i++) {
-      const pageBtn = document.createElement('button');
-      pageBtn.textContent = i;
-      pageBtn.className = `relative inline-flex items-center px-4 py-2 text-sm font-semibold ${i === currentPage ? 'z-10 bg-primary text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'}`;
-      
-      if (i !== currentPage) {
-        pageBtn.addEventListener('click', () => {
-          currentPage = i;
-          updateTable();
-          updatePagination();
-        });
-      }
-      
-      paginationContainer.appendChild(pageBtn);
-    }
-    
-    // Botão última página
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        const ellipsis = document.createElement('span');
-        ellipsis.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700';
-        ellipsis.textContent = '...';
-        paginationContainer.appendChild(ellipsis);
-      }
-      
-      const lastPageBtn = document.createElement('button');
-      lastPageBtn.textContent = totalPages;
-      lastPageBtn.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0';
-      lastPageBtn.addEventListener('click', () => {
-        currentPage = totalPages;
-        updateTable();
-        updatePagination();
-      });
-      paginationContainer.appendChild(lastPageBtn);
-    }
-  }
-  
-  // Filtra a tabela com base no texto de busca
-  function filterTable() {
-    const searchText = document.getElementById('search-sales').value.toLowerCase();
-    
-    if (!searchText) {
-      filteredData = [...salesData];
-    } else {
-      filteredData = salesData.filter(sale => 
-        sale.product.toLowerCase().includes(searchText) ||
-        sale.date.includes(searchText) ||
-        sale.quantity.toString().includes(searchText) ||
-        sale.unit_price.toString().includes(searchText) ||
-        sale.total.toString().includes(searchText)
+
+  // Tabela de vendas
+  try {
+    const salesResp = await fetchData('/api/sales', {start_date: startDate, end_date: endDate, product, page: 1, page_size: 100});
+    let sales = salesResp.data;
+    if (searchText) {
+      const lower = searchText.toLowerCase();
+      sales = sales.filter(sale =>
+        sale.product.toLowerCase().includes(lower) ||
+        sale.date.includes(lower) ||
+        sale.quantity.toString().includes(lower) ||
+        sale.unit_price.toString().includes(lower) ||
+        sale.total.toString().includes(lower)
       );
     }
-    
-    currentPage = 1;
-    updateTable();
-    updatePagination();
-  }
-  
-  // Atualiza a tabela com os dados atuais
-  function updateTable() {
     const tbody = document.getElementById('sales-table-body');
     tbody.innerHTML = '';
-    
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    const paginatedData = filteredData.slice(start, end);
-    
-    if (paginatedData.length === 0) {
+    if (sales.length === 0) {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-          Nenhum dado encontrado com os filtros atuais.
-        </td>
-      `;
+      tr.innerHTML = `<td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">Nenhum dado encontrado com os filtros atuais.</td>`;
       tbody.appendChild(tr);
       return;
     }
-    
-    paginatedData.forEach(sale => {
+    sales.forEach(sale => {
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-gray-50';
       tr.innerHTML = `
@@ -832,69 +461,28 @@ group by product;</pre>
       `;
       tbody.appendChild(tr);
     });
+  } catch (e) {
+    showToast('Erro ao buscar vendas', 'error');
   }
-  
-  // Animação de fade-in para os cards
-  document.querySelectorAll('.bg-card').forEach(function(card, i) {
-    card.style.opacity = 0;
-    setTimeout(function() {
-      card.style.transition = 'opacity 0.7s';
-      card.style.opacity = 1;
-    }, 200 + i * 150);
-  });
-  
-  // Formatador JSON para preview de vendas
-  const preview = {{ sales_preview|tojson|safe }};
-    const el = document.getElementById('sales-preview');
-    if (el && preview) {
-      el.textContent = JSON.stringify(preview, null, 2);
-    }
+}
 
-    // Botão copiar curl
-    document.querySelectorAll('.copy-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        navigator.clipboard.writeText(btn.getAttribute('data-cmd'));
-        btn.textContent = 'Copiado!';
-        setTimeout(function() { btn.textContent = 'Copiar curl'; }, 1200);
-      });
+// Eventos para filtros e busca
+function setupDashboardEvents() {
+  document.getElementById('apply-filters').addEventListener('click', updateDashboard);
+  document.getElementById('search-sales').addEventListener('input', updateDashboard);
+  document.querySelectorAll('.time-filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
+      this.classList.add('bg-primary', 'text-white');
+      updateDashboard();
     });
   });
+}
 
-  // Forms interativos para endpoints POST
-  function showResp(id, data) {
-    document.getElementById(id).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-  }
-  document.getElementById('ml-train-btn').onclick = async function() {
-    showResp('ml-train-resp', 'Processando...');
-    const resp = await fetch('/ml/train', {method: 'POST'});
-    showResp('ml-train-resp', await resp.json());
-  };
-  document.getElementById('ml-predict-form').onsubmit = async function(e) {
-    e.preventDefault();
-    showResp('ml-predict-resp', 'Processando...');
-    const quantity = this.quantity.value;
-    const unit_price = this.unit_price.value;
-    const resp = await fetch('/ml/predict', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({quantity: Number(quantity), unit_price: Number(unit_price)})
-    });
-    showResp('ml-predict-resp', await resp.json());
-  };
-  document.getElementById('etl-run-btn').onclick = async function() {
-    showResp('etl-run-resp', 'Processando...');
-    const resp = await fetch('/etl/run', {method: 'POST'});
-    showResp('etl-run-resp', await resp.json());
-  };
-  document.getElementById('gold-export-btn').onclick = async function() {
-    showResp('gold-export-resp', 'Processando...');
-    const resp = await fetch('/gold/export', {method: 'POST'});
-    showResp('gold-export-resp', await resp.json());
-  };
-  document.getElementById('spark-run-btn').onclick = async function() {
-    showResp('spark-run-resp', 'Processando...');
-    const resp = await fetch('/spark/run', {method: 'POST'});
-    showResp('spark-run-resp', await resp.json());
-  };
+// Inicialização
+window.addEventListener('DOMContentLoaded', () => {
+  setupDashboardEvents();
+  updateDashboard();
+});
 </script>
 {% endblock %}

@@ -88,7 +88,7 @@ Para iniciar o projeto localmente, siga os passos abaixo:
    ```bash
    git clone <URL_DO_REPOSITORIO>
    cd moura-stack-training
-````
+
 
 3. **Configuração do ambiente**
 
@@ -155,5 +155,4 @@ Para iniciar o projeto localmente, siga os passos abaixo:
   * **Power BI**: configure `POWER_BI_EMBED_URL`.
   * **dbt**: aponte para o Postgres da nuvem e rode `dbt run`.
 
-```
 

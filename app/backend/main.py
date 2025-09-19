@@ -29,6 +29,8 @@ except Exception as e:
 
 app = FastAPI(title="Moura Stack API", version="1.2.0")
 
+app.mount("/public", StaticFiles(directory="public"), name="public")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
