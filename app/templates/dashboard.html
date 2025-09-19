@@ -1,31 +1,60 @@
 {% extends "base.html" %}
 {% block title %}Dashboard Moura Stack{% endblock %}
 {% block content %}
+<!-- Guia rápido para o avaliador -->
+<div class="mb-10 p-6 bg-card border border-border rounded-lg shadow flex flex-col md:flex-row gap-6 items-center">
+  <div class="flex-1">
+    <h2 class="text-2xl font-bold text-primary mb-2">Bem-vindo ao Moura Stack 🚀</h2>
+    <p class="text-kpi mb-2">Este dashboard demonstra um projeto completo de Data Stack para análise de vendas, automação de ETL, machine learning, exportação de dados e integração com BI.</p>
+    <ul class="list-disc pl-6 text-kpi text-sm mb-2">
+      <li>KPIs e gráficos interativos</li>
+      <li>API REST com endpoints GET/POST</li>
+      <li>ETL Prefect, PySpark, dbt, Export Excel</li>
+      <li>Infraestrutura Docker pronta para produção</li>
+    </ul>
+    <a href="/docs" target="_blank" class="inline-block mt-2 px-4 py-2 bg-primary text-white rounded shadow hover:bg-blue-700 font-bold">Abrir documentação Swagger/OpenAPI</a>
+  </div>
+  <div class="flex flex-col gap-2 items-center">
+    <span class="text-4xl">🔋</span>
+    <span class="text-xs text-gray-400">Powered by Moura</span>
+  </div>
+</div>
+
+<!-- KPIs -->
 <div class="mb-8">
   <h2 class="text-2xl font-bold mb-4 text-primary">Resumo de Vendas</h2>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
-      <div class="uppercase text-sm text-kpi mb-2">Receita Total</div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" title="Receita total gerada pelas vendas">
+      <div class="flex items-center gap-2 mb-2"><span class="text-2xl">💰</span><span class="uppercase text-sm text-kpi">Receita Total</span></div>
       <div class="text-2xl font-bold text-primary">R$ {{ summary.total_revenue | round(2) }}</div>
     </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
-      <div class="uppercase text-sm text-kpi mb-2">Quantidade Total</div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" title="Quantidade total de itens vendidos">
+      <div class="flex items-center gap-2 mb-2"><span class="text-2xl">📦</span><span class="uppercase text-sm text-kpi">Quantidade Total</span></div>
       <div class="text-2xl font-bold text-primary">{{ summary.total_quantity }}</div>
     </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
-      <div class="uppercase text-sm text-kpi mb-2">Ticket Médio</div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" title="Ticket médio por venda">
+      <div class="flex items-center gap-2 mb-2"><span class="text-2xl">🎫</span><span class="uppercase text-sm text-kpi">Ticket Médio</span></div>
       <div class="text-2xl font-bold text-primary">R$ {{ summary.avg_ticket | round(2) }}</div>
     </div>
   </div>
 </div>
 
+<!-- Preview de vendas -->
+<div class="mb-8">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Preview de Vendas (API)</h2>
+  <div class="bg-card rounded-lg p-4 mb-4">
+    <pre class="text-xs text-kpi" id="sales-preview"></pre>
+    <div class="text-xs text-gray-400 mt-2">Endpoint: <a href="/metrics/sales" class="text-primary underline">/metrics/sales</a></div>
+  </div>
+</div>
+
+<!-- Gráficos -->
 <div class="mb-8">
   <h2 class="text-xl font-semibold mb-4 text-primary">Gráfico de Receita por Produto</h2>
   <div class="bg-card rounded-lg p-4 mb-4">
     {% if plot_html %}{{ plot_html | safe }}{% else %}<div class="text-kpi">Sem dados para exibir.</div>{% endif %}
   </div>
 </div>
-
 <div class="mb-8">
   <h2 class="text-xl font-semibold mb-4 text-primary">Gráfico Quantidade x Preço</h2>
   <div class="bg-card rounded-lg p-4 mb-4 flex justify-center">
@@ -37,6 +66,7 @@
   </div>
 </div>
 
+<!-- Power BI -->
 <div class="mb-8">
   <h2 class="text-xl font-semibold mb-4 text-primary">Embed Power BI</h2>
   <div class="bg-card rounded-lg p-4 mb-4">
@@ -48,36 +78,110 @@
   </div>
 </div>
 
+<!-- Endpoints REST -->
 <div class="mb-8">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Exemplos de API REST</h2>
-  <div class="bg-card rounded-lg p-4 mb-4">
-    <ul class="list-disc pl-6 text-kpi">
-      <li><a href="/health" class="text-primary underline">/health</a> — Status da API e banco</li>
-      <li><a href="/metrics/sales" class="text-primary underline">/metrics/sales</a> — Preview de vendas</li>
-      <li><a href="/metrics/summary" class="text-primary underline">/metrics/summary</a> — KPIs agregados</li>
-      <li><a href="/stats/pearson" class="text-primary underline">/stats/pearson</a> — Correlação Pearson</li>
-      <li><a href="/stats/ols" class="text-primary underline">/stats/ols</a> — Regressão OLS</li>
-      <li><a href="/ml/train" class="text-primary underline">/ml/train</a> — Treinar modelo ML</li>
-      <li><a href="/ml/predict" class="text-primary underline">/ml/predict</a> — Predição ML</li>
-      <li><a href="/etl/run" class="text-primary underline">/etl/run</a> — Executar ETL Prefect</li>
-      <li><a href="/gold/export" class="text-primary underline">/gold/export</a> — Exportar Gold Parquet/CSV</li>
-      <li><a href="/export/excel" class="text-primary underline">/export/excel</a> — Exportar Excel</li>
-      <li><a href="/spark/run" class="text-primary underline">/spark/run</a> — Job PySpark</li>
-    </ul>
+  <h2 class="text-xl font-semibold mb-4 text-primary">Testar Endpoints POST (interativo)</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
+      <h3 class="font-bold text-primary mb-2">ML Train</h3>
+      <button id="ml-train-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Treinar modelo</button>
+      <pre id="ml-train-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
+      <h3 class="font-bold text-primary mb-2">ML Predict</h3>
+      <form id="ml-predict-form" class="flex flex-col gap-2">
+        <input type="number" name="quantity" min="1" placeholder="Quantidade" class="border border-border rounded px-2 py-1" required />
+        <input type="number" name="unit_price" min="1" step="any" placeholder="Preço unitário" class="border border-border rounded px-2 py-1" required />
+        <button type="submit" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Prever</button>
+      </form>
+      <pre id="ml-predict-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
+      <h3 class="font-bold text-primary mb-2">ETL Run</h3>
+      <button id="etl-run-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Executar ETL</button>
+      <pre id="etl-run-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
+      <h3 class="font-bold text-primary mb-2">Gold Export</h3>
+      <button id="gold-export-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Exportar Gold</button>
+      <pre id="gold-export-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
+      <h3 class="font-bold text-primary mb-2">Spark Run</h3>
+      <button id="spark-run-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Executar Spark</button>
+      <pre id="spark-run-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
+    </div>
   </div>
 </div>
 
+<!-- Endpoints REST (GET/POST) -->
+<div class="mb-8">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Exemplos de API REST</h2>
+  <div class="bg-card rounded-lg p-4 mb-4">
+    <div class="mb-2 text-sm text-gray-700">Endpoints <b>GET</b> funcionam direto no navegador. Endpoints <b>POST</b> devem ser chamados via <b>curl</b> ou <b>fetch</b> (botão copiar disponível).</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <h3 class="font-bold text-primary mb-2">GET</h3>
+        <ul class="list-disc pl-6 text-kpi">
+          <li><a href="/health" class="text-primary underline">/health</a> — Status da API e banco</li>
+          <li><a href="/metrics/sales" class="text-primary underline">/metrics/sales</a> — Preview de vendas</li>
+          <li><a href="/metrics/summary" class="text-primary underline">/metrics/summary</a> — KPIs agregados</li>
+          <li><a href="/stats/pearson" class="text-primary underline">/stats/pearson</a> — Correlação Pearson</li>
+          <li><a href="/stats/ols" class="text-primary underline">/stats/ols</a> — Regressão OLS</li>
+          <li><a href="/export/excel" class="text-primary underline">/export/excel</a> — Exportar Excel</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-bold text-primary mb-2">POST</h3>
+        <ul class="list-disc pl-6 text-kpi">
+          <li>Treinar modelo ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /ml/train">Copiar curl</button>)</span></li>
+          <li>Predição ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST -H 'Content-Type: application/json' -d '{\"quantity\":10,\"unit_price\":200}' /ml/predict">Copiar curl</button>)</span></li>
+          <li>Executar ETL Prefect <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /etl/run">Copiar curl</button>)</span></li>
+          <li>Exportar Gold Parquet/CSV <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /gold/export">Copiar curl</button>)</span></li>
+          <li>Job PySpark <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /spark/run">Copiar curl</button>)</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stack cards -->
 <div class="mb-8">
   <h2 class="text-xl font-semibold mb-4 text-primary">Infraestrutura & Data Stack</h2>
-  <div class="bg-card rounded-lg p-4 mb-4">
-    <ul class="list-disc pl-6 text-kpi">
-      <li><b>Banco PostgreSQL</b>: tabela <code>sales</code>, trigger <code>set_total</code>, procedure <code>upsert_product_revenue</code></li>
-      <li><b>ETL Prefect</b>: fluxo para gerar Parquet/CSV (camada Gold)</li>
-      <li><b>PySpark</b>: job para processamento em larga escala</li>
-      <li><b>Export Excel</b>: endpoint usando OpenPyXL</li>
-      <li><b>dbt</b>: modelos <code>stg_sales</code> (silver) e <code>fct_sales</code> (gold)</li>
-      <li><b>Infraestrutura</b>: Docker/Docker Compose prontos para uso</li>
-    </ul>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
+      <div class="flex items-center gap-2"><span class="text-2xl">🗄️</span><span class="font-bold">PostgreSQL</span></div>
+      <div class="text-sm text-kpi">Tabela <code>sales</code>, trigger <code>set_total</code>, procedure <code>upsert_product_revenue</code>.</div>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
+      <div class="flex items-center gap-2"><span class="text-2xl">⚡</span><span class="font-bold">ETL Prefect</span></div>
+      <div class="text-sm text-kpi">Fluxo para gerar Parquet/CSV (camada Gold).</div>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
+      <div class="flex items-center gap-2"><span class="text-2xl">🔥</span><span class="font-bold">PySpark</span></div>
+      <div class="text-sm text-kpi">Job para processamento em larga escala.</div>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
+      <div class="flex items-center gap-2"><span class="text-2xl">📊</span><span class="font-bold">Export Excel</span></div>
+      <div class="text-sm text-kpi">Endpoint usando OpenPyXL.</div>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
+      <div class="flex items-center gap-2"><span class="text-2xl">🧬</span><span class="font-bold">dbt</span></div>
+      <div class="text-sm text-kpi">Modelos <code>stg_sales</code> (silver) e <code>fct_sales</code> (gold).</div>
+      <div class="mt-2 text-xs text-gray-700">Exemplo de modelo SQL (fct_sales.sql):</div>
+      <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">select
+  product,
+  sum(quantity)    as total_quantity,
+  sum(total)       as total_revenue,
+  avg(unit_price)  as avg_unit_price
+from {{ ref('stg_sales') }}
+group by product;</pre>
+      <div class="mt-2 text-xs text-gray-700">O dbt permite modelar dados analíticos em camadas (silver/gold), facilitando análises e integrações BI. <a href="https://docs.getdbt.com/docs/building-a-dbt-project" target="_blank" class="text-primary underline">Saiba mais</a></div>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
+      <div class="flex items-center gap-2"><span class="text-2xl">🐳</span><span class="font-bold">Docker</span></div>
+      <div class="text-sm text-kpi">Dockerfile e docker-compose prontos para uso e deploy.</div>
+    </div>
   </div>
 </div>
 
@@ -91,6 +195,59 @@
         card.style.opacity = 1;
       }, 200 + i * 150);
     });
+
+    // Formatador JSON para preview de vendas
+    const preview = {{ sales_preview|tojson|safe }};
+    const el = document.getElementById('sales-preview');
+    if (el && preview) {
+      el.textContent = JSON.stringify(preview, null, 2);
+    }
+
+    // Botão copiar curl
+    document.querySelectorAll('.copy-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        navigator.clipboard.writeText(btn.getAttribute('data-cmd'));
+        btn.textContent = 'Copiado!';
+        setTimeout(function() { btn.textContent = 'Copiar curl'; }, 1200);
+      });
+    });
   });
+
+  // Forms interativos para endpoints POST
+  function showResp(id, data) {
+    document.getElementById(id).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  }
+  document.getElementById('ml-train-btn').onclick = async function() {
+    showResp('ml-train-resp', 'Processando...');
+    const resp = await fetch('/ml/train', {method: 'POST'});
+    showResp('ml-train-resp', await resp.json());
+  };
+  document.getElementById('ml-predict-form').onsubmit = async function(e) {
+    e.preventDefault();
+    showResp('ml-predict-resp', 'Processando...');
+    const quantity = this.quantity.value;
+    const unit_price = this.unit_price.value;
+    const resp = await fetch('/ml/predict', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({quantity: Number(quantity), unit_price: Number(unit_price)})
+    });
+    showResp('ml-predict-resp', await resp.json());
+  };
+  document.getElementById('etl-run-btn').onclick = async function() {
+    showResp('etl-run-resp', 'Processando...');
+    const resp = await fetch('/etl/run', {method: 'POST'});
+    showResp('etl-run-resp', await resp.json());
+  };
+  document.getElementById('gold-export-btn').onclick = async function() {
+    showResp('gold-export-resp', 'Processando...');
+    const resp = await fetch('/gold/export', {method: 'POST'});
+    showResp('gold-export-resp', await resp.json());
+  };
+  document.getElementById('spark-run-btn').onclick = async function() {
+    showResp('spark-run-resp', 'Processando...');
+    const resp = await fetch('/spark/run', {method: 'POST'});
+    showResp('spark-run-resp', await resp.json());
+  };
 </script>
 {% endblock %}
