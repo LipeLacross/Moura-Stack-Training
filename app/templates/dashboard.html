@@ -306,7 +306,7 @@ from sales;</pre>
   sum(quantity)    as total_quantity,
   sum(total)       as total_revenue,
   avg(unit_price)  as avg_unit_price
-from {{ ref('stg_sales') }}
+from stg_sales
 group by product;</pre>
       <div class="mt-2 text-xs text-gray-700">O dbt organiza dados em camadas: <b>Silver</b> (normalização) e <b>Gold</b> (agregação analítica). Permite análises confiáveis e integrações BI. <a href="https://docs.getdbt.com/docs/building-a-dbt-project" target="_blank" class="text-primary underline">Saiba mais</a></div>
     </div>
