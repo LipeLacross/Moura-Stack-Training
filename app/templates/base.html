@@ -12,12 +12,12 @@
         extend: {
           colors: {
             primary: '#2563eb',
-            bgDark: '#0f1115',
-            card: '#1e2430',
-            border: '#2c3442',
-            accent: '#4dabf7',
-            kpi: '#adb5bd',
-            kpiValue: '#f5f5f5',
+            bgDark: '#ffffff', // fundo branco
+            card: '#f8fafc',
+            border: '#e2e8f0',
+            accent: '#2563eb',
+            kpi: '#64748b',
+            kpiValue: '#0f172a',
           }
         }
       }
@@ -25,18 +25,21 @@
   </script>
 </head>
 <body class="bg-bgDark text-kpiValue min-h-screen">
-  <header class="bg-[#161a21] px-8 py-4 flex justify-between items-center shadow">
-    <h1 class="text-xl font-bold flex items-center gap-2">🔋 Moura Stack</h1>
+  <header class="bg-primary/10 px-8 py-4 flex justify-between items-center shadow">
+    <div class="flex items-center gap-2">
+      <img src="/public/moura-logo.ico" alt="Moura Logo" class="w-8 h-8 rounded-full" />
+      <h1 class="text-xl font-bold text-primary">🔋 Moura Stack</h1>
+    </div>
     <nav class="flex gap-4 text-accent">
-      <a href="/" class="hover:underline">Dashboard</a>
-      <span class="text-gray-500">|</span>
-      <a href="/docs" target="_blank" class="hover:underline">Docs API</a>
+      <a href="/" class="hover:underline font-semibold">Dashboard</a>
+      <span class="text-gray-400">|</span>
+      <a href="/docs" target="_blank" class="hover:underline font-semibold">Docs API</a>
     </nav>
   </header>
   <main class="container mx-auto px-4 py-8">
     {% block content %}{% endblock %}
   </main>
-  <footer class="mt-16 py-6 text-xs text-gray-400 text-center border-t border-border">
+  <footer class="mt-16 py-6 text-xs text-gray-500 text-center border-t border-border">
     Moura Stack • FastAPI • {{ year }}
   </footer>
 </body>

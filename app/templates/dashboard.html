@@ -1,44 +1,86 @@
 {% extends "base.html" %}
 {% block title %}Dashboard Moura Stack{% endblock %}
 {% block content %}
-<h2 class="text-2xl font-bold mb-6 text-accent">Resumo de Vendas</h2>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-  <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
-    <div class="uppercase text-sm text-kpi mb-2">Receita Total</div>
-    <div class="text-2xl font-bold text-primary">R$ {{ summary.total_revenue | round(2) }}</div>
-  </div>
-  <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
-    <div class="uppercase text-sm text-kpi mb-2">Quantidade Total</div>
-    <div class="text-2xl font-bold text-primary">{{ summary.total_quantity }}</div>
-  </div>
-  <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
-    <div class="uppercase text-sm text-kpi mb-2">Ticket Médio</div>
-    <div class="text-2xl font-bold text-primary">R$ {{ summary.avg_ticket | round(2) }}</div>
+<div class="mb-8">
+  <h2 class="text-2xl font-bold mb-4 text-primary">Resumo de Vendas</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
+      <div class="uppercase text-sm text-kpi mb-2">Receita Total</div>
+      <div class="text-2xl font-bold text-primary">R$ {{ summary.total_revenue | round(2) }}</div>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
+      <div class="uppercase text-sm text-kpi mb-2">Quantidade Total</div>
+      <div class="text-2xl font-bold text-primary">{{ summary.total_quantity }}</div>
+    </div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
+      <div class="uppercase text-sm text-kpi mb-2">Ticket Médio</div>
+      <div class="text-2xl font-bold text-primary">R$ {{ summary.avg_ticket | round(2) }}</div>
+    </div>
   </div>
 </div>
 
-<h2 class="text-xl font-semibold mb-4 text-accent">Gráfico de Receita por Produto</h2>
-<div class="bg-card rounded-lg p-4 mb-8">
-  {% if plot_html %}{{ plot_html | safe }}{% else %}<div class="text-kpi">Sem dados para exibir.</div>{% endif %}
+<div class="mb-8">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Gráfico de Receita por Produto</h2>
+  <div class="bg-card rounded-lg p-4 mb-4">
+    {% if plot_html %}{{ plot_html | safe }}{% else %}<div class="text-kpi">Sem dados para exibir.</div>{% endif %}
+  </div>
 </div>
 
-<h2 class="text-xl font-semibold mb-4 text-accent">Gráfico Quantidade x Preço</h2>
-<div class="bg-card rounded-lg p-4 mb-8 flex justify-center">
-  {% if scatter_b64 %}
-    <img src="data:image/png;base64,{{ scatter_b64 }}" class="max-w-xs rounded-lg shadow transition-transform duration-300 hover:scale-105" />
-  {% else %}
-    <div class="text-kpi">Sem dados para exibir.</div>
-  {% endif %}
+<div class="mb-8">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Gráfico Quantidade x Preço</h2>
+  <div class="bg-card rounded-lg p-4 mb-4 flex justify-center">
+    {% if scatter_b64 %}
+      <img src="data:image/png;base64,{{ scatter_b64 }}" class="max-w-xs rounded-lg shadow transition-transform duration-300 hover:scale-105" />
+    {% else %}
+      <div class="text-kpi">Sem dados para exibir.</div>
+    {% endif %}
+  </div>
 </div>
 
-<h2 class="text-xl font-semibold mb-4 text-accent">Embed Power BI</h2>
-<div class="bg-card rounded-lg p-4 mb-8">
-  {% if power_bi_url %}
-    <iframe src="{{ power_bi_url }}" height="400" class="w-full rounded-lg border border-border transition-shadow duration-300 hover:shadow-lg"></iframe>
-  {% else %}
-    <div class="text-kpi">Power BI não configurado.</div>
-  {% endif %}
+<div class="mb-8">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Embed Power BI</h2>
+  <div class="bg-card rounded-lg p-4 mb-4">
+    {% if power_bi_url %}
+      <iframe src="{{ power_bi_url }}" height="400" class="w-full rounded-lg border border-border transition-shadow duration-300 hover:shadow-lg"></iframe>
+    {% else %}
+      <div class="text-kpi">Power BI não configurado.</div>
+    {% endif %}
+  </div>
 </div>
+
+<div class="mb-8">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Exemplos de API REST</h2>
+  <div class="bg-card rounded-lg p-4 mb-4">
+    <ul class="list-disc pl-6 text-kpi">
+      <li><a href="/health" class="text-primary underline">/health</a> — Status da API e banco</li>
+      <li><a href="/metrics/sales" class="text-primary underline">/metrics/sales</a> — Preview de vendas</li>
+      <li><a href="/metrics/summary" class="text-primary underline">/metrics/summary</a> — KPIs agregados</li>
+      <li><a href="/stats/pearson" class="text-primary underline">/stats/pearson</a> — Correlação Pearson</li>
+      <li><a href="/stats/ols" class="text-primary underline">/stats/ols</a> — Regressão OLS</li>
+      <li><a href="/ml/train" class="text-primary underline">/ml/train</a> — Treinar modelo ML</li>
+      <li><a href="/ml/predict" class="text-primary underline">/ml/predict</a> — Predição ML</li>
+      <li><a href="/etl/run" class="text-primary underline">/etl/run</a> — Executar ETL Prefect</li>
+      <li><a href="/gold/export" class="text-primary underline">/gold/export</a> — Exportar Gold Parquet/CSV</li>
+      <li><a href="/export/excel" class="text-primary underline">/export/excel</a> — Exportar Excel</li>
+      <li><a href="/spark/run" class="text-primary underline">/spark/run</a> — Job PySpark</li>
+    </ul>
+  </div>
+</div>
+
+<div class="mb-8">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Infraestrutura & Data Stack</h2>
+  <div class="bg-card rounded-lg p-4 mb-4">
+    <ul class="list-disc pl-6 text-kpi">
+      <li><b>Banco PostgreSQL</b>: tabela <code>sales</code>, trigger <code>set_total</code>, procedure <code>upsert_product_revenue</code></li>
+      <li><b>ETL Prefect</b>: fluxo para gerar Parquet/CSV (camada Gold)</li>
+      <li><b>PySpark</b>: job para processamento em larga escala</li>
+      <li><b>Export Excel</b>: endpoint usando OpenPyXL</li>
+      <li><b>dbt</b>: modelos <code>stg_sales</code> (silver) e <code>fct_sales</code> (gold)</li>
+      <li><b>Infraestrutura</b>: Docker/Docker Compose prontos para uso</li>
+    </ul>
+  </div>
+</div>
+
 <script>
   // Animação de fade-in para os cards
   document.addEventListener('DOMContentLoaded', function() {
