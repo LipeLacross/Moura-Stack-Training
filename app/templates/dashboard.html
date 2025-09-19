@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Dashboard Moura Stack{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+{% endblock %}
+
 {% block content %}
 <!-- Guia rápido para o avaliador -->
 <div class="mb-10 p-6 bg-card border border-border rounded-lg shadow flex flex-col md:flex-row gap-6 items-center">
@@ -20,21 +26,68 @@
   </div>
 </div>
 
+<!-- Filtros -->
+<div class="mb-8 bg-card p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Filtros</h2>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-kpi mb-1">Data Inicial</label>
+      <input type="date" id="start-date" class="w-full p-2 border border-border rounded">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-kpi mb-1">Data Final</label>
+      <input type="date" id="end-date" class="w-full p-2 border border-border rounded">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-kpi mb-1">Produto</label>
+      <select id="product-filter" class="w-full p-2 border border-border rounded">
+        <option value="">Todos os Produtos</option>
+        {% for product in products %}
+        <option value="{{ product }}">{{ product }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="flex items-end">
+      <button id="apply-filters" class="w-full bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">
+        Aplicar Filtros
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- KPIs -->
 <div class="mb-8">
   <h2 class="text-2xl font-bold mb-4 text-primary">Resumo de Vendas</h2>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" title="Receita total gerada pelas vendas">
-      <div class="flex items-center gap-2 mb-2"><span class="text-2xl">💰</span><span class="uppercase text-sm text-kpi">Receita Total</span></div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" id="kpi-container">
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center relative" id="revenue-kpi">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">💰</span>
+        <span class="uppercase text-sm text-kpi">Receita Total</span>
+      </div>
       <div class="text-2xl font-bold text-primary">R$ {{ summary.total_revenue | round(2) }}</div>
+      <div class="text-xs mt-1 text-green-500 flex items-center">
+        <span class="trend-arrow">→</span> <span class="trend-value">0%</span>
+      </div>
     </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" title="Quantidade total de itens vendidos">
-      <div class="flex items-center gap-2 mb-2"><span class="text-2xl">📦</span><span class="uppercase text-sm text-kpi">Quantidade Total</span></div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" id="quantity-kpi">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">📦</span>
+        <span class="uppercase text-sm text-kpi">Quantidade Total</span>
+      </div>
       <div class="text-2xl font-bold text-primary">{{ summary.total_quantity }}</div>
+      <div class="text-xs mt-1 text-green-500 flex items-center">
+        <span class="trend-arrow">→</span> <span class="trend-value">0%</span>
+      </div>
     </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" title="Ticket médio por venda">
-      <div class="flex items-center gap-2 mb-2"><span class="text-2xl">🎫</span><span class="uppercase text-sm text-kpi">Ticket Médio</span></div>
+    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center" id="avg-ticket-kpi">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">🎫</span>
+        <span class="uppercase text-sm text-kpi">Ticket Médio</span>
+      </div>
       <div class="text-2xl font-bold text-primary">R$ {{ summary.avg_ticket | round(2) }}</div>
+      <div class="text-xs mt-1 text-green-500 flex items-center">
+        <span class="trend-arrow">→</span> <span class="trend-value">0%</span>
+      </div>
     </div>
   </div>
 </div>
@@ -49,20 +102,114 @@
 </div>
 
 <!-- Gráficos -->
-<div class="mb-8">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Gráfico de Receita por Produto</h2>
-  <div class="bg-card rounded-lg p-4 mb-4">
-    {% if plot_html %}{{ plot_html | safe }}{% else %}<div class="text-kpi">Sem dados para exibir.</div>{% endif %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="bg-card border border-border rounded-lg p-6 shadow">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-primary">Receita por Período</h2>
+      <div class="flex space-x-2">
+        <button class="time-filter-btn px-3 py-1 rounded border border-border bg-white text-sm" data-period="week">Semana</button>
+        <button class="time-filter-btn px-3 py-1 rounded border border-border bg-primary text-white text-sm" data-period="month">Mês</button>
+        <button class="time-filter-btn px-3 py-1 rounded border border-border bg-white text-sm" data-period="year">Ano</button>
+      </div>
+    </div>
+    <div class="h-80">
+      <canvas id="revenueChart"></canvas>
+    </div>
+  </div>
+
+  <div class="bg-card border border-border rounded-lg p-6 shadow">
+    <h2 class="text-xl font-semibold mb-4 text-primary">Distribuição por Categoria</h2>
+    <div class="h-80">
+      <canvas id="categoryChart"></canvas>
+    </div>
   </div>
 </div>
-<div class="mb-8">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Gráfico Quantidade x Preço</h2>
-  <div class="bg-card rounded-lg p-4 mb-4 flex justify-center">
-    {% if scatter_b64 %}
-      <img src="data:image/png;base64,{{ scatter_b64 }}" class="max-w-xs rounded-lg shadow transition-transform duration-300 hover:scale-105" />
-    {% else %}
-      <div class="text-kpi">Sem dados para exibir.</div>
-    {% endif %}
+
+<!-- Tabela de Vendas -->
+<div class="bg-card border border-border rounded-lg shadow overflow-hidden mb-8">
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-primary">Últimas Vendas</h2>
+      <div class="relative">
+        <input type="text" id="search-sales" placeholder="Buscar vendas..." class="pl-8 pr-4 py-2 border border-border rounded-lg">
+        <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200" id="sales-table">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="date">
+              Data
+              <span class="sort-indicator">↓</span>
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="product">
+              Produto
+              <span class="sort-indicator"></span>
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="quantity">
+              Quantidade
+              <span class="sort-indicator"></span>
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="price">
+              Preço Unit.
+              <span class="sort-indicator"></span>
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="total">
+              Total
+              <span class="sort-indicator"></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200" id="sales-table-body">
+          {% for sale in sales %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.date }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.product }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.quantity }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ {{ "%.2f"|format(sale.unit_price) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">R$ {{ "%.2f"|format(sale.total) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+      <div class="flex flex-1 justify-between sm:hidden">
+        <button class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50" id="prev-page-mobile">Anterior</button>
+        <button class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50" id="next-page-mobile">Próximo</button>
+      </div>
+      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Mostrando <span class="font-medium" id="start-item">1</span> a <span class="font-medium" id="end-item">10</span> de <span class="font-medium" id="total-items">{{ sales|length }}</span> resultados
+          </p>
+        </div>
+        <div>
+          <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+            <button class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0" id="prev-page">
+              <span class="sr-only">Anterior</span>
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div id="pagination-numbers" class="flex">
+              <!-- Pagination numbers will be inserted here by JavaScript -->
+            </div>
+            <button class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0" id="next-page">
+              <span class="sr-only">Próximo</span>
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -186,18 +333,515 @@ group by product;</pre>
 </div>
 
 <script>
-  // Animação de fade-in para os cards
+  // Dados iniciais
+  const salesData = {{ sales|tojson|safe }};
+  const products = {{ products|tojson|safe }};
+  
+  // Configuração da paginação
+  let currentPage = 1;
+  const rowsPerPage = 10;
+  let currentSort = { column: 'date', direction: 'desc' };
+  let filteredData = [...salesData];
+  
+  // Inicialização
   document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.bg-card').forEach(function(card, i) {
-      card.style.opacity = 0;
-      setTimeout(function() {
-        card.style.transition = 'opacity 0.7s';
-        card.style.opacity = 1;
-      }, 200 + i * 150);
+    // Inicializa os gráficos
+    initCharts();
+    
+    // Configura os filtros
+    setupFilters();
+    
+    // Configura a ordenação da tabela
+    setupSorting();
+    
+    // Configura a paginação
+    setupPagination();
+    
+    // Configura a busca
+    document.getElementById('search-sales').addEventListener('input', filterTable);
+    
+    // Configura os botões de período
+    document.querySelectorAll('.time-filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
+        this.classList.add('bg-primary', 'text-white');
+        updateCharts(this.dataset.period);
+      });
     });
-
-    // Formatador JSON para preview de vendas
-    const preview = {{ sales_preview|tojson|safe }};
+    
+    // Inicializa a tabela
+    updateTable();
+  });
+  
+  // Inicializa os gráficos
+  function initCharts() {
+    // Gráfico de receita
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    window.revenueChart = new Chart(revenueCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Receita (R$)',
+          data: [],
+          borderColor: 'rgb(59, 130, 246)',
+          tension: 0.3,
+          fill: true,
+          backgroundColor: 'rgba(59, 130, 246, 0.1)'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          },
+          legend: {
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString();
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // Gráfico de categorias
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    window.categoryChart = new Chart(categoryCtx, {
+      type: 'doughnut',
+      data: {
+        labels: [],
+        datasets: [{
+          data: [],
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(139, 92, 246, 0.8)'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.label || '';
+                const value = context.raw || 0;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `${label}: R$ ${value.toLocaleString()} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // Atualiza os gráficos com os dados iniciais
+    updateCharts('month');
+  }
+  
+  // Atualiza os gráficos com base no período selecionado
+  function updateCharts(period) {
+    // Simula dados para o exemplo
+    const now = new Date();
+    let labels = [];
+    let revenueData = [];
+    
+    if (period === 'week') {
+      // Últimos 7 dias
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(now.getDate() - i);
+        labels.push(date.toLocaleDateString('pt-BR', { weekday: 'short' }));
+        revenueData.push(Math.floor(Math.random() * 10000) + 5000);
+      }
+    } else if (period === 'month') {
+      // Últimos 30 dias
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(now.getDate() - i);
+        if (i % 5 === 0) {
+          labels.push(date.toLocaleDateString('pt-BR', { day: '2-digit' }));
+        } else {
+          labels.push('');
+        }
+        revenueData.push(Math.floor(Math.random() * 5000) + 2000);
+      }
+    } else {
+      // Últimos 12 meses
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(now.getMonth() - i);
+        labels.push(date.toLocaleDateString('pt-BR', { month: 'short' }));
+        revenueData.push(Math.floor(Math.random() * 15000) + 10000);
+      }
+    }
+    
+    // Atualiza o gráfico de receita
+    window.revenueChart.data.labels = labels;
+    window.revenueChart.data.datasets[0].data = revenueData;
+    window.revenueChart.update();
+    
+    // Atualiza o gráfico de categorias (dados de exemplo)
+    const categories = ['Baterias', 'Autopeças', 'Serviços', 'Acessórios', 'Outros'];
+    const categoryData = categories.map(() => Math.floor(Math.random() * 10000) + 2000);
+    
+    window.categoryChart.data.labels = categories;
+    window.categoryChart.data.datasets[0].data = categoryData;
+    window.categoryChart.update();
+    
+    // Atualiza os KPIs
+    updateKPIs(revenueData, categoryData);
+  }
+  
+  // Atualiza os KPIs com base nos dados dos gráficos
+  function updateKPIs(revenueData, categoryData) {
+    const totalRevenue = revenueData.reduce((a, b) => a + b, 0);
+    const totalQuantity = Math.floor(totalRevenue / 100);
+    const avgTicket = totalRevenue / (totalQuantity || 1);
+    
+    // Atualiza os valores
+    document.querySelector('#revenue-kpi .text-2xl').textContent = `R$ ${totalRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.querySelector('#quantity-kpi .text-2xl').textContent = totalQuantity.toLocaleString('pt-BR');
+    document.querySelector('#avg-ticket-kpi .text-2xl').textContent = `R$ ${avgTicket.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    
+    // Atualiza as tendências (exemplo aleatório)
+    const trends = document.querySelectorAll('.trend-value');
+    trends.forEach(trend => {
+      const change = (Math.random() * 20 - 5).toFixed(1);
+      const isPositive = change >= 0;
+      const arrow = trend.previousElementSibling;
+      
+      trend.textContent = `${Math.abs(change)}%`;
+      trend.className = `trend-value text-xs mt-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`;
+      arrow.textContent = isPositive ? '↑' : '↓';
+      arrow.className = `trend-arrow ${isPositive ? 'text-green-500' : 'text-red-500'}`;
+    });
+  }
+  
+  // Configura os filtros
+  function setupFilters() {
+    // Define as datas padrão (últimos 30 dias)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+    
+    // Formata as datas para o input date (YYYY-MM-DD)
+    document.getElementById('start-date').valueAsDate = startDate;
+    document.getElementById('end-date').valueAsDate = endDate;
+    
+    // Adiciona o evento de clique no botão de aplicar filtros
+    document.getElementById('apply-filters').addEventListener('click', applyFilters);
+  }
+  
+  // Aplica os filtros
+  function applyFilters() {
+    const startDate = new Date(document.getElementById('start-date').value);
+    const endDate = new Date(document.getElementById('end-date').value);
+    const productFilter = document.getElementById('product-filter').value;
+    
+    // Filtra os dados
+    filteredData = salesData.filter(sale => {
+      const saleDate = new Date(sale.date);
+      const matchesDate = (!startDate || saleDate >= startDate) && 
+                         (!endDate || saleDate <= endDate);
+      const matchesProduct = !productFilter || sale.product === productFilter;
+      
+      return matchesDate && matchesProduct;
+    });
+    
+    // Atualiza a tabela e a paginação
+    currentPage = 1;
+    updateTable();
+    updatePagination();
+    
+    // Atualiza os gráficos (simulação)
+    updateCharts('month');
+  }
+  
+  // Configura a ordenação da tabela
+  function setupSorting() {
+    document.querySelectorAll('.sortable').forEach(header => {
+      header.addEventListener('click', () => {
+        const column = header.dataset.sort;
+        const isCurrentColumn = currentSort.column === column;
+        
+        // Alterna a direção se for a mesma coluna
+        currentSort = {
+          column,
+          direction: isCurrentColumn && currentSort.direction === 'asc' ? 'desc' : 'asc'
+        };
+        
+        // Atualiza os indicadores visuais
+        document.querySelectorAll('.sort-indicator').forEach(indicator => {
+          indicator.textContent = '';
+        });
+        
+        const indicator = header.querySelector('.sort-indicator');
+        indicator.textContent = currentSort.direction === 'asc' ? '↑' : '↓';
+        
+        // Ordena os dados
+        sortData();
+        updateTable();
+      });
+    });
+  }
+  
+  // Ordena os dados com base na coluna e direção atuais
+  function sortData() {
+    filteredData.sort((a, b) => {
+      let valueA, valueB;
+      
+      switch(currentSort.column) {
+        case 'date':
+          valueA = new Date(a.date);
+          valueB = new Date(b.date);
+          break;
+        case 'product':
+          valueA = a.product.toLowerCase();
+          valueB = b.product.toLowerCase();
+          break;
+        case 'quantity':
+          valueA = parseFloat(a.quantity);
+          valueB = parseFloat(b.quantity);
+          break;
+        case 'price':
+          valueA = parseFloat(a.unit_price);
+          valueB = parseFloat(b.unit_price);
+          break;
+        case 'total':
+          valueA = parseFloat(a.total);
+          valueB = parseFloat(b.total);
+          break;
+        default:
+          valueA = a[0];
+          valueB = b[0];
+      }
+      
+      if (valueA < valueB) {
+        return currentSort.direction === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return currentSort.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+  
+  // Configura a paginação
+  function setupPagination() {
+    document.getElementById('prev-page').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        updateTable();
+        updatePagination();
+      }
+    });
+    
+    document.getElementById('next-page').addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        updateTable();
+        updatePagination();
+      }
+    });
+    
+    // Versão mobile
+    document.getElementById('prev-page-mobile').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        updateTable();
+        updatePagination();
+      }
+    });
+    
+    document.getElementById('next-page-mobile').addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        updateTable();
+        updatePagination();
+      }
+    });
+    
+    updatePagination();
+  }
+  
+  // Atualiza a exibição da paginação
+  function updatePagination() {
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / rowsPerPage);
+    
+    // Atualiza os contadores
+    const startItem = (currentPage - 1) * rowsPerPage + 1;
+    const endItem = Math.min(startItem + rowsPerPage - 1, totalItems);
+    
+    document.getElementById('start-item').textContent = startItem;
+    document.getElementById('end-item').textContent = endItem;
+    document.getElementById('total-items').textContent = totalItems;
+    
+    // Atualiza os botões de navegação
+    document.getElementById('prev-page').disabled = currentPage === 1;
+    document.getElementById('next-page').disabled = currentPage === totalPages;
+    document.getElementById('prev-page-mobile').disabled = currentPage === 1;
+    document.getElementById('next-page-mobile').disabled = currentPage === totalPages;
+    
+    // Atualiza os números da paginação
+    const paginationContainer = document.getElementById('pagination-numbers');
+    paginationContainer.innerHTML = '';
+    
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // Botão primeira página
+    if (startPage > 1) {
+      const firstPageBtn = document.createElement('button');
+      firstPageBtn.textContent = '1';
+      firstPageBtn.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0';
+      firstPageBtn.addEventListener('click', () => {
+        currentPage = 1;
+        updateTable();
+        updatePagination();
+      });
+      paginationContainer.appendChild(firstPageBtn);
+      
+      if (startPage > 2) {
+        const ellipsis = document.createElement('span');
+        ellipsis.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700';
+        ellipsis.textContent = '...';
+        paginationContainer.appendChild(ellipsis);
+      }
+    }
+    
+    // Botões das páginas
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.textContent = i;
+      pageBtn.className = `relative inline-flex items-center px-4 py-2 text-sm font-semibold ${i === currentPage ? 'z-10 bg-primary text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'}`;
+      
+      if (i !== currentPage) {
+        pageBtn.addEventListener('click', () => {
+          currentPage = i;
+          updateTable();
+          updatePagination();
+        });
+      }
+      
+      paginationContainer.appendChild(pageBtn);
+    }
+    
+    // Botão última página
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        const ellipsis = document.createElement('span');
+        ellipsis.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700';
+        ellipsis.textContent = '...';
+        paginationContainer.appendChild(ellipsis);
+      }
+      
+      const lastPageBtn = document.createElement('button');
+      lastPageBtn.textContent = totalPages;
+      lastPageBtn.className = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0';
+      lastPageBtn.addEventListener('click', () => {
+        currentPage = totalPages;
+        updateTable();
+        updatePagination();
+      });
+      paginationContainer.appendChild(lastPageBtn);
+    }
+  }
+  
+  // Filtra a tabela com base no texto de busca
+  function filterTable() {
+    const searchText = document.getElementById('search-sales').value.toLowerCase();
+    
+    if (!searchText) {
+      filteredData = [...salesData];
+    } else {
+      filteredData = salesData.filter(sale => 
+        sale.product.toLowerCase().includes(searchText) ||
+        sale.date.includes(searchText) ||
+        sale.quantity.toString().includes(searchText) ||
+        sale.unit_price.toString().includes(searchText) ||
+        sale.total.toString().includes(searchText)
+      );
+    }
+    
+    currentPage = 1;
+    updateTable();
+    updatePagination();
+  }
+  
+  // Atualiza a tabela com os dados atuais
+  function updateTable() {
+    const tbody = document.getElementById('sales-table-body');
+    tbody.innerHTML = '';
+    
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const paginatedData = filteredData.slice(start, end);
+    
+    if (paginatedData.length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+          Nenhum dado encontrado com os filtros atuais.
+        </td>
+      `;
+      tbody.appendChild(tr);
+      return;
+    }
+    
+    paginatedData.forEach(sale => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-gray-50';
+      tr.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.date}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.product}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.quantity}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ ${parseFloat(sale.unit_price).toFixed(2)}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">R$ ${parseFloat(sale.total).toFixed(2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  
+  // Animação de fade-in para os cards
+  document.querySelectorAll('.bg-card').forEach(function(card, i) {
+    card.style.opacity = 0;
+    setTimeout(function() {
+      card.style.transition = 'opacity 0.7s';
+      card.style.opacity = 1;
+    }, 200 + i * 150);
+  });
+  
+  // Formatador JSON para preview de vendas
+  const preview = {{ sales_preview|tojson|safe }};
     const el = document.getElementById('sales-preview');
     if (el && preview) {
       el.textContent = JSON.stringify(preview, null, 2);
