@@ -7,6 +7,8 @@
 {% endblock %}
 
 {% block content %}
+<link rel="icon" type="image/x-icon" href="/public/moura-logo.ico">
+
 <!-- Guia rápido para o avaliador -->
 <div class="mb-10 p-6 bg-card border border-border rounded-lg shadow flex flex-col md:flex-row gap-6 items-center">
   <div class="flex-1">
@@ -221,42 +223,6 @@
   </div>
 </div>
 
-<!-- Endpoints REST -->
-<div class="mb-8">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Testar Endpoints POST (interativo)</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
-      <h3 class="font-bold text-primary mb-2">ML Train</h3>
-      <button id="ml-train-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Treinar modelo</button>
-      <pre id="ml-train-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
-    </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
-      <h3 class="font-bold text-primary mb-2">ML Predict</h3>
-      <form id="ml-predict-form" class="flex flex-col gap-2">
-        <input type="number" name="quantity" min="1" placeholder="Quantidade" class="border border-border rounded px-2 py-1" required />
-        <input type="number" name="unit_price" min="1" step="any" placeholder="Preço unitário" class="border border-border rounded px-2 py-1" required />
-        <button type="submit" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Prever</button>
-      </form>
-      <pre id="ml-predict-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
-    </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
-      <h3 class="font-bold text-primary mb-2">ETL Run</h3>
-      <button id="etl-run-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Executar ETL</button>
-      <pre id="etl-run-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
-    </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
-      <h3 class="font-bold text-primary mb-2">Gold Export</h3>
-      <button id="gold-export-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Exportar Gold</button>
-      <pre id="gold-export-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
-    </div>
-    <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-4">
-      <h3 class="font-bold text-primary mb-2">Spark Run</h3>
-      <button id="spark-run-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Executar Spark</button>
-      <pre id="spark-run-resp" class="bg-gray-100 rounded p-2 text-xs mt-2"></pre>
-    </div>
-  </div>
-</div>
-
 <!-- Endpoints REST (GET/POST) -->
 <div class="mb-8">
   <h2 class="text-xl font-semibold mb-4 text-primary">Exemplos de API REST</h2>
@@ -277,14 +243,28 @@
       <div>
         <h3 class="font-bold text-primary mb-2">POST</h3>
         <ul class="list-disc pl-6 text-kpi">
-          <li>Treinar modelo ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /ml/train">Copiar curl</button>)</span></li>
-          <li>Predição ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST -H 'Content-Type: application/json' -d '{\"quantity\":10,\"unit_price\":200}' /ml/predict">Copiar curl</button>)</span></li>
-          <li>Executar ETL Prefect <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /etl/run">Copiar curl</button>)</span></li>
-          <li>Exportar Gold Parquet/CSV <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /gold/export">Copiar curl</button>)</span></li>
-          <li>Job PySpark <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /spark/run">Copiar curl</button>)</span></li>
+          <li>Treinar modelo ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /ml/train">Copiar curl</button>) <button class="exec-btn" data-endpoint="/ml/train">Executar</button></span></li>
+          <li>Predição ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST -H 'Content-Type: application/json' -d '{\"quantity\":10,\"unit_price\":200}' /ml/predict">Copiar curl</button>) <button class="exec-btn" data-endpoint="/ml/predict" data-payload="true">Executar</button></span></li>
+          <li>Executar ETL Prefect <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /etl/run">Copiar curl</button>) <button class="exec-btn" data-endpoint="/etl/run">Executar</button></span></li>
+          <li>Exportar Gold Parquet/CSV <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /gold/export">Copiar curl</button>) <button class="exec-btn" data-endpoint="/gold/export">Executar</button></span></li>
+          <li>Job PySpark <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /spark/run">Copiar curl</button>) <button class="exec-btn" data-endpoint="/spark/run">Executar</button></span></li>
         </ul>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Modal para input de predição ML -->
+<div id="predict-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:2rem;border-radius:8px;max-width:350px;margin:auto;">
+    <h3 class="text-lg font-bold mb-2">Predição ML</h3>
+    <label>Quantidade:</label>
+    <input type="number" id="predict-quantity" class="w-full mb-2 p-2 border border-border rounded">
+    <label>Preço unitário:</label>
+    <input type="number" id="predict-unit-price" class="w-full mb-4 p-2 border border-border rounded">
+    <button id="predict-confirm" class="bg-primary text-white px-4 py-2 rounded">Executar</button>
+    <button id="predict-cancel" class="ml-2 px-4 py-2 rounded border" onclick="document.getElementById('predict-modal').style.display='none'">Cancelar</button>
+    <div id="predict-result" class="mt-4 text-sm"></div>
   </div>
 </div>
 
@@ -310,22 +290,64 @@
     </div>
     <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
       <div class="flex items-center gap-2"><span class="text-2xl">🧬</span><span class="font-bold">dbt</span></div>
-      <div class="text-sm text-kpi">Modelos <code>stg_sales</code> (silver) e <code>fct_sales</code> (gold).</div>
-      <div class="mt-2 text-xs text-gray-700">Exemplo de modelo SQL (<b>stg_sales.sql</b>):</div>
-      <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">select * from sales;</pre>
-      <div class="mt-2 text-xs text-gray-700">Exemplo de modelo SQL (<b>fct_sales.sql</b>):</div>
+      <div class="text-sm text-kpi">Modelos <code>stg_sales</code> (silver) e <code>fct_sales</code> (gold) implementados no projeto.</div>
+      <div class="mt-2 text-xs text-gray-700">Modelo <b>stg_sales.sql</b> (silver): Normaliza e garante coluna total.</div>
+      <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">select
+  order_id,
+  region,
+  product,
+  quantity,
+  unit_price,
+  coalesce(total, quantity * unit_price) as total
+from sales;</pre>
+      <div class="mt-2 text-xs text-gray-700">Modelo <b>fct_sales.sql</b> (gold): Agrega receita e quantidade por produto.</div>
       <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">select
   product,
   sum(quantity)    as total_quantity,
   sum(total)       as total_revenue,
   avg(unit_price)  as avg_unit_price
-from sales
+from {{ ref('stg_sales') }}
 group by product;</pre>
-      <div class="mt-2 text-xs text-gray-700">O dbt permite modelar dados analíticos em camadas (silver/gold), facilitando análises e integrações BI. <a href="https://docs.getdbt.com/docs/building-a-dbt-project" target="_blank" class="text-primary underline">Saiba mais</a></div>
+      <div class="mt-2 text-xs text-gray-700">O dbt organiza dados em camadas: <b>Silver</b> (normalização) e <b>Gold</b> (agregação analítica). Permite análises confiáveis e integrações BI. <a href="https://docs.getdbt.com/docs/building-a-dbt-project" target="_blank" class="text-primary underline">Saiba mais</a></div>
     </div>
     <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
       <div class="flex items-center gap-2"><span class="text-2xl">🐳</span><span class="font-bold">Docker</span></div>
       <div class="text-sm text-kpi">Infraestrutura pronta para deploy local ou cloud.<br>
+        <b>Dockerfile:</b>
+        <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">FROM python:3.11-slim
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    openjdk-17-jre-headless \
+    && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+COPY public ./public
+EXPOSE 8000
+CMD ["uvicorn", "app.backend.main:app", "--host", "0.0.0.0", "--port", "${PORT:-8000}"]
+</pre>
+        <b>docker-compose.yml:</b>
+        <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">version: "3.9"
+services:
+  api:
+    build: .
+    container_name: moura_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./public:/app/public
+      - ./app:/app/app
+      - ./sql:/app/sql
+    restart: unless-stopped
+</pre>
         <b>Exemplo:</b> <code>docker build -t moura-api .</code> <br>
         <code>docker run -p 8000:8000 moura-api</code> <br>
         <b>Compose:</b> <code>docker-compose up --build</code> <br>
@@ -335,154 +357,130 @@ group by product;</pre>
   </div>
 </div>
 
-<!-- Ações -->
-<div class="mb-8 bg-card p-6 rounded-lg shadow">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Ações</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- ML Train -->
-    <div class="flex gap-2 items-center">
-      <button onclick="postAction('/train', 'Treinar modelo ML')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Treinar modelo ML</button>
-      <button onclick="copyCurl('/train', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
-    </div>
-    <!-- ML Predict -->
-    <div class="flex gap-2 items-center">
-      <button onclick="postAction('/predict', 'Predição ML', {quantity: 10, unit_price: 100})" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Predição ML</button>
-      <button onclick="copyCurl('/predict', 'POST', {quantity: 10, unit_price: 100})" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
-    </div>
-    <!-- ETL Run -->
-    <div class="flex gap-2 items-center">
-      <button onclick="postAction('/run', 'Executar ETL')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Executar ETL</button>
-      <button onclick="copyCurl('/run', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
-    </div>
-    <!-- Gold Export -->
-    <div class="flex gap-2 items-center">
-      <button onclick="postAction('/export', 'Exportar Gold')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Exportar Gold</button>
-      <button onclick="copyCurl('/export', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
-    </div>
-    <!-- Spark Run -->
-    <div class="flex gap-2 items-center">
-      <button onclick="postAction('/spark/run', 'Executar Spark')" class="bg-primary text-white py-2 px-4 rounded hover:bg-blue-700">Executar Spark</button>
-      <button onclick="copyCurl('/spark/run', 'POST')" class="bg-gray-200 py-2 px-4 rounded hover:bg-gray-300">Copiar curl</button>
-    </div>
-  </div>
-</div>
+
 
 <script>
-  // Dados iniciais
-  const salesData = {{ sales|tojson|safe }};
-  const products = {{ products|tojson|safe }};
-  
-  // Configuração da paginação
-  let currentPage = 1;
-  const rowsPerPage = 10;
-  let currentSort = { column: 'date', direction: 'desc' };
-  let filteredData = [...salesData];
-  
-  // Utilitário para buscar dados do backend
-async function fetchData(endpoint, params = {}) {
-  const url = new URL(endpoint, window.location.origin);
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== null && v !== undefined && v !== '') url.searchParams.append(k, v);
+  // Função para copiar curl para clipboard
+  function copyToClipboard(cmd) {
+    navigator.clipboard.writeText(cmd);
+    alert('Comando copiado!');
+  }
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      copyToClipboard(this.dataset.cmd);
+    });
   });
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error('Erro ao buscar dados');
-  return await resp.json();
-}
-
-// Atualiza KPIs, gráficos e tabela conforme filtros
-async function updateDashboard() {
-  const startDate = document.getElementById('start-date').value;
-  const endDate = document.getElementById('end-date').value;
-  const product = document.getElementById('product-filter').value;
-  const searchText = document.getElementById('search-sales').value;
-
-  // KPIs
-  try {
-    const summary = await fetchData('/api/summary', {start_date: startDate, end_date: endDate, product});
-    document.querySelector('#revenue-kpi .text-2xl').textContent = `R$ ${summary.total_revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-    document.querySelector('#quantity-kpi .text-2xl').textContent = summary.total_quantity.toLocaleString('pt-BR');
-    document.querySelector('#avg-ticket-kpi .text-2xl').textContent = `R$ ${summary.avg_ticket.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-  } catch (e) {
-    showToast('Erro ao buscar KPIs', 'error');
+  // Filtros, pesquisa e gráficos
+  async function fetchSales(filters = {}) {
+    const params = new URLSearchParams(filters).toString();
+    const res = await fetch(`/api/sales?${params}`);
+    return await res.json();
   }
-
-  // Gráfico de receita
-  try {
-    const period = document.querySelector('.time-filter-btn.bg-primary')?.dataset.period || 'month';
-    const revenue = await fetchData('/api/charts/revenue', {period, product});
-    window.revenueChart.data.labels = revenue.labels;
-    window.revenueChart.data.datasets[0].data = revenue.data;
-    window.revenueChart.update();
-  } catch (e) {
-    showToast('Erro ao buscar gráfico de receita', 'error');
-  }
-
-  // Gráfico de categorias
-  try {
-    const categories = await fetchData('/api/charts/categories', {start_date: startDate, end_date: endDate});
-    window.categoryChart.data.labels = categories.labels;
-    window.categoryChart.data.datasets[0].data = categories.data;
-    window.categoryChart.update();
-  } catch (e) {
-    showToast('Erro ao buscar gráfico de categorias', 'error');
-  }
-
-  // Tabela de vendas
-  try {
-    const salesResp = await fetchData('/api/sales', {start_date: startDate, end_date: endDate, product, page: 1, page_size: 100});
-    let sales = salesResp.data;
-    if (searchText) {
-      const lower = searchText.toLowerCase();
-      sales = sales.filter(sale =>
-        sale.product.toLowerCase().includes(lower) ||
-        sale.date.includes(lower) ||
-        sale.quantity.toString().includes(lower) ||
-        sale.unit_price.toString().includes(lower) ||
-        sale.total.toString().includes(lower)
-      );
-    }
+  function renderTable(sales) {
     const tbody = document.getElementById('sales-table-body');
     tbody.innerHTML = '';
-    if (sales.length === 0) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">Nenhum dado encontrado com os filtros atuais.</td>`;
-      tbody.appendChild(tr);
-      return;
-    }
     sales.forEach(sale => {
       const tr = document.createElement('tr');
-      tr.className = 'hover:bg-gray-50';
-      tr.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.date}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.product}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.quantity}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ ${parseFloat(sale.unit_price).toFixed(2)}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">R$ ${parseFloat(sale.total).toFixed(2)}</td>
-      `;
+      tr.innerHTML = `<td>${sale.date}</td><td>${sale.product}</td><td>${sale.quantity}</td><td>R$ ${sale.unit_price.toFixed(2)}</td><td>R$ ${sale.total.toFixed(2)}</td>`;
       tbody.appendChild(tr);
     });
-  } catch (e) {
-    showToast('Erro ao buscar vendas', 'error');
   }
-}
-
-// Eventos para filtros e busca
-function setupDashboardEvents() {
-  document.getElementById('apply-filters').addEventListener('click', updateDashboard);
-  document.getElementById('search-sales').addEventListener('input', updateDashboard);
-  document.querySelectorAll('.time-filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
-      this.classList.add('bg-primary', 'text-white');
-      updateDashboard();
+  document.getElementById('apply-filters').onclick = async function() {
+    const start = document.getElementById('start-date').value;
+    const end = document.getElementById('end-date').value;
+    const product = document.getElementById('product-filter').value;
+    const data = await fetchSales({start_date: start, end_date: end, product});
+    renderTable(data.sales);
+    renderCharts(data.sales);
+  };
+  document.getElementById('search-sales').oninput = async function(e) {
+    const q = e.target.value.toLowerCase();
+    const data = await fetchSales();
+    const filtered = data.sales.filter(sale => sale.product.toLowerCase().includes(q));
+    renderTable(filtered);
+  };
+  function renderCharts(sales) {
+    // Receita por período
+    const ctx1 = document.getElementById('revenueChart').getContext('2d');
+    const revenueData = {};
+    sales.forEach(sale => {
+      const d = sale.date;
+      revenueData[d] = (revenueData[d] || 0) + sale.total;
+    });
+    new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: Object.keys(revenueData),
+        datasets: [{label: 'Receita', data: Object.values(revenueData), borderColor: '#2563eb'}]
+      }
+    });
+    // Distribuição por categoria
+    const ctx2 = document.getElementById('categoryChart').getContext('2d');
+    const catData = {};
+    sales.forEach(sale => {
+      catData[sale.product] = (catData[sale.product] || 0) + sale.total;
+    });
+    new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(catData),
+        datasets: [{label: 'Receita', data: Object.values(catData), backgroundColor: ['#2563eb','#22d3ee','#f59e42','#f43f5e','#a3e635']}]
+      }
+    });
+  }
+  window.onload = async function() {
+    const data = await fetchSales();
+    renderTable(data.sales);
+    renderCharts(data.sales);
+  };
+  function showToast(msg, success=true) {
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '30px';
+    toast.style.right = '30px';
+    toast.style.background = success ? '#2563eb' : '#f43f5e';
+    toast.style.color = '#fff';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '8px';
+    toast.style.zIndex = 9999;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
+  document.querySelectorAll('.exec-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const endpoint = this.dataset.endpoint;
+      if (this.dataset.payload) {
+        // Abrir modal para input
+        document.getElementById('predict-modal').style.display = 'flex';
+        document.getElementById('predict-result').textContent = '';
+        document.getElementById('predict-confirm').onclick = async function() {
+          const quantity = document.getElementById('predict-quantity').value;
+          const unit_price = document.getElementById('predict-unit-price').value;
+          try {
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({quantity: Number(quantity), unit_price: Number(unit_price)})
+            });
+            const data = await res.json();
+            document.getElementById('predict-result').textContent = 'Predição: ' + (data.y_pred ?? JSON.stringify(data));
+            showToast('Predição realizada!', true);
+          } catch (e) {
+            document.getElementById('predict-result').textContent = 'Erro: ' + e;
+            showToast('Erro na predição!', false);
+          }
+        };
+      } else {
+        try {
+          const res = await fetch(endpoint, {method: 'POST'});
+          const data = await res.json();
+          showToast('Executado com sucesso: ' + JSON.stringify(data), true);
+        } catch (e) {
+          showToast('Erro: ' + e, false);
+        }
+      }
     });
   });
-}
-
-// Inicialização
-window.addEventListener('DOMContentLoaded', () => {
-  setupDashboardEvents();
-  updateDashboard();
-});
 </script>
 {% endblock %}

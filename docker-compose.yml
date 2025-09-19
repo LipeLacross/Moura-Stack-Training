@@ -13,3 +13,4 @@ services:
       - ./app:/app/app
       - ./sql:/app/sql
     restart: unless-stopped
+
