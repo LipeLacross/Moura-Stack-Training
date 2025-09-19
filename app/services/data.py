@@ -112,9 +112,21 @@ def compute_summary(df: pd.DataFrame) -> Dict[str, Any]:
     regions = sorted(df["region"].dropna().unique().tolist()) if "region" in df.columns else []
     
     # Período coberto
-    start_date = df["date"].min().strftime("%Y-%m-%d") if not df["date"].empty else None
-    end_date = df["date"].max().strftime("%Y-%m-%d") if not df["date"].empty else None
-    
+    if "date" in df.columns:
+        # Tenta converter para datetime se necessário
+        try:
+            dates = pd.to_datetime(df["date"], errors="coerce")
+            start_date = dates.min()
+            end_date = dates.max()
+            start_date = start_date.strftime("%Y-%m-%d") if pd.notnull(start_date) else None
+            end_date = end_date.strftime("%Y-%m-%d") if pd.notnull(end_date) else None
+        except Exception:
+            start_date = None
+            end_date = None
+    else:
+        start_date = None
+        end_date = None
+
     return {
         "total_revenue": total_revenue,
         "total_quantity": total_quantity,
