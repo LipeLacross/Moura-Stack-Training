@@ -20,10 +20,6 @@
     </ul>
     <a href="/docs" target="_blank" class="inline-block mt-2 px-4 py-2 bg-primary text-white rounded shadow hover:bg-blue-700 font-bold">Abrir documentação Swagger/OpenAPI</a>
   </div>
-  <div class="flex flex-col gap-2 items-center">
-    <span class="text-4xl">🔋</span>
-    <span class="text-xs text-gray-400">Powered by Moura</span>
-  </div>
 </div>
 
 <!-- Filtros -->
@@ -315,7 +311,9 @@
     <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
       <div class="flex items-center gap-2"><span class="text-2xl">🧬</span><span class="font-bold">dbt</span></div>
       <div class="text-sm text-kpi">Modelos <code>stg_sales</code> (silver) e <code>fct_sales</code> (gold).</div>
-      <div class="mt-2 text-xs text-gray-700">Exemplo de modelo SQL (fct_sales.sql):</div>
+      <div class="mt-2 text-xs text-gray-700">Exemplo de modelo SQL (<b>stg_sales.sql</b>):</div>
+      <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">select * from sales;</pre>
+      <div class="mt-2 text-xs text-gray-700">Exemplo de modelo SQL (<b>fct_sales.sql</b>):</div>
       <pre class="bg-gray-100 rounded p-2 text-xs overflow-x-auto">select
   product,
   sum(quantity)    as total_quantity,
@@ -327,7 +325,12 @@ group by product;</pre>
     </div>
     <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
       <div class="flex items-center gap-2"><span class="text-2xl">🐳</span><span class="font-bold">Docker</span></div>
-      <div class="text-sm text-kpi">Dockerfile e docker-compose prontos para uso e deploy.</div>
+      <div class="text-sm text-kpi">Infraestrutura pronta para deploy local ou cloud.<br>
+        <b>Exemplo:</b> <code>docker build -t moura-api .</code> <br>
+        <code>docker run -p 8000:8000 moura-api</code> <br>
+        <b>Compose:</b> <code>docker-compose up --build</code> <br>
+        <a href="https://docs.docker.com/get-started/" target="_blank" class="text-primary underline">Documentação Docker</a>
+      </div>
     </div>
   </div>
 </div>
