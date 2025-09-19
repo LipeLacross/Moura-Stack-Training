@@ -17,8 +17,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-# Expor apenas a porta da API (Streamlit removido)
+COPY public ./public
 EXPOSE 8000
 
 # Executar somente a aplicação FastAPI
-CMD ["uvicorn", "app.backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.backend.main:app", "--host", "0.0.0.0", "--port", "${PORT:-8000}"]

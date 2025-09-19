@@ -1,9 +1,15 @@
 version: "3.9"
 services:
-  moura:
+  api:
     build: .
-    env_file: .env
+    container_name: moura_api
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "8000:8000"
+    env_file:
+      - .env
     volumes:
-      - .:/app
+      - ./data:/app/data
+      - ./public:/app/public
+      - ./app:/app/app
+      - ./sql:/app/sql
+    restart: unless-stopped
