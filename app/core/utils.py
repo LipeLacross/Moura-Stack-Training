@@ -18,6 +18,13 @@ def table_exists(table_name: str = "sales") -> bool:
         return result.scalar()
 
 
+def get_db_info():
+    with engine.connect() as conn:
+        db = conn.execute(text("SELECT current_database()"))
+        schema = conn.execute(text("SELECT current_schema()"))
+        return db.scalar(), schema.scalar()
+
+
 def init_db_if_needed():
     """
     Inicializa o banco executando o SQL de 01_init.sql se a tabela 'sales' não existir.
@@ -28,6 +35,8 @@ def init_db_if_needed():
         log("Inicialização automática desabilitada.")
         return
     try:
+        db_name, schema_name = get_db_info()
+        log(f"Conectado ao banco: {db_name}, schema: {schema_name}")
         if table_exists():
             log("Tabela 'sales' já existe. Nenhuma ação necessária.")
             return
@@ -38,12 +47,21 @@ def init_db_if_needed():
             return
         with open(sql_path, encoding="utf-8") as f:
             sql = f.read()
-        with engine.connect() as conn:
-            try:
+        try:
+            with engine.begin() as conn:
                 conn.exec_driver_sql(sql)
-                log("Script de inicialização executado com sucesso.")
-            except Exception as e:
-                log(f"Erro ao executar script SQL: {e}")
+            log("Script de inicialização executado com sucesso (transação).")
+        except Exception as e:
+            log(f"Erro ao executar script SQL via exec_driver_sql: {e}")
+            log("Tentando executar comando a comando...")
+            with engine.begin() as conn:
+                for cmd in sql.split(';'):
+                    cmd = cmd.strip()
+                    if cmd:
+                        try:
+                            conn.execute(text(cmd))
+                        except Exception as e2:
+                            log(f"Erro ao executar comando: {cmd[:60]}... -> {e2}")
         # Verificação pós-inicialização
         if table_exists():
             log("Tabela 'sales' criada com sucesso.")
