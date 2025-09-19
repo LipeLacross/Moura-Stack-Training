@@ -1,1 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Moura Stack{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 text-accent">Resumo de Vendas</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+  <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
+    <div class="uppercase text-sm text-kpi mb-2">Receita Total</div>
+    <div class="text-2xl font-bold text-primary">R$ {{ summary.total_revenue | round(2) }}</div>
+  </div>
+  <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
+    <div class="uppercase text-sm text-kpi mb-2">Quantidade Total</div>
+    <div class="text-2xl font-bold text-primary">{{ summary.total_quantity }}</div>
+  </div>
+  <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center">
+    <div class="uppercase text-sm text-kpi mb-2">Ticket Médio</div>
+    <div class="text-2xl font-bold text-primary">R$ {{ summary.avg_ticket | round(2) }}</div>
+  </div>
+</div>
 
+<h2 class="text-xl font-semibold mb-4 text-accent">Gráfico de Receita por Produto</h2>
+<div class="bg-card rounded-lg p-4 mb-8">
+  {% if plot_html %}{{ plot_html | safe }}{% else %}<div class="text-kpi">Sem dados para exibir.</div>{% endif %}
+</div>
+
+<h2 class="text-xl font-semibold mb-4 text-accent">Gráfico Quantidade x Preço</h2>
+<div class="bg-card rounded-lg p-4 mb-8 flex justify-center">
+  {% if scatter_b64 %}
+    <img src="data:image/png;base64,{{ scatter_b64 }}" class="max-w-xs rounded-lg shadow transition-transform duration-300 hover:scale-105" />
+  {% else %}
+    <div class="text-kpi">Sem dados para exibir.</div>
+  {% endif %}
+</div>
+
+<h2 class="text-xl font-semibold mb-4 text-accent">Embed Power BI</h2>
+<div class="bg-card rounded-lg p-4 mb-8">
+  {% if power_bi_url %}
+    <iframe src="{{ power_bi_url }}" height="400" class="w-full rounded-lg border border-border transition-shadow duration-300 hover:shadow-lg"></iframe>
+  {% else %}
+    <div class="text-kpi">Power BI não configurado.</div>
+  {% endif %}
+</div>
+<script>
+  // Animação de fade-in para os cards
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.bg-card').forEach(function(card, i) {
+      card.style.opacity = 0;
+      setTimeout(function() {
+        card.style.transition = 'opacity 0.7s';
+        card.style.opacity = 1;
+      }, 200 + i * 150);
+    });
+  });
+</script>
+{% endblock %}
