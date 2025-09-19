@@ -49,13 +49,11 @@ def load_sales_df(use_cache: bool = True) -> pd.DataFrame:
                         product, 
                         quantity, 
                         unit_price, 
-                        date,
                         COALESCE(total, quantity*unit_price) AS total 
                     FROM sales 
-                    ORDER BY date DESC, order_id
+                    ORDER BY order_id
                 """),
-                conn,
-                parse_dates=['date']
+                conn
             )
     else:
         csv_path = os.getenv("ETL_CSV_PATH", "data/sample_sales.csv")
@@ -374,4 +372,3 @@ def predict(quantity: int, unit_price: float) -> float:
         train_model(df)
     assert _MODEL is not None  # for type checker
     return float(_MODEL.predict([[quantity, unit_price]])[0])  # type: ignore[arg-type]
-
