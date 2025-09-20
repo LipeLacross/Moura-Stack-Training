@@ -25,7 +25,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_set_total ON sales;
+-- Garante que a trigger só será removida se a tabela existir
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'sales') THEN
+    DROP TRIGGER IF EXISTS trg_set_total ON sales;
+  END IF;
+END$$;
+
 CREATE TRIGGER trg_set_total
 BEFORE INSERT OR UPDATE ON sales
 FOR EACH ROW EXECUTE PROCEDURE set_total();
