@@ -1,6 +1,6 @@
 import os
 from sqlalchemy import text
-from app.backend.db import engine
+from app.backend.db import engine, IS_SQLITE
 
 
 def log(msg: str):
@@ -19,10 +19,13 @@ def table_exists(table_name: str = "sales") -> bool:
 
 
 def get_db_info():
-    with engine.connect() as conn:
-        db = conn.execute(text("SELECT current_database()"))
-        schema = conn.execute(text("SELECT current_schema()"))
-        return db.scalar(), schema.scalar()
+    if IS_SQLITE:
+        return "sqlite", None
+    else:
+        with engine.connect() as conn:
+            db = conn.execute(text("SELECT current_database()"))
+            schema = conn.execute(text("SELECT current_schema()"))
+            return db.scalar(), schema.scalar()
 
 
 def init_db_if_needed():
@@ -36,14 +39,28 @@ def init_db_if_needed():
         return
     try:
         db_name, schema_name = get_db_info()
-        log(f"Conectado ao banco: {db_name}, schema: {schema_name}")
-        # Verifica se a tabela existe e se tem a coluna 'date'
+        log(f"Conectado ao banco: {db_name}")
         with engine.connect() as conn:
-            result = conn.execute(text("""
-                SELECT column_name FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
-            """))
-            has_date = result.rowcount > 0
-        if not table_exists() or not has_date:
+            if IS_SQLITE:
+                result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
+                table_exists = result.fetchone() is not None
+                has_date = False
+                if table_exists:
+                    col_result = conn.execute(text("PRAGMA table_info(sales);"))
+                    for row in col_result:
+                        if row[1] == 'date':
+                            has_date = True
+                            break
+            else:
+                result = conn.execute(text("""
+                    SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales'
+                """))
+                table_exists = result.scalar() > 0
+                col_result = conn.execute(text("""
+                    SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
+                """))
+                has_date = col_result.scalar() > 0
+        if not table_exists or not has_date:
             log("Tabela 'sales' não existe ou está com schema incorreto. Executando 02_reset_sales.sql...")
             sql_path = os.path.join(os.path.dirname(__file__), '../../sql/02_reset_sales.sql')
             with open(sql_path, 'r', encoding='utf-8') as f:
@@ -100,46 +117,46 @@ def reset_db_once():
         return
     try:
         with engine.connect() as conn:
-            # Verifica se a tabela existe
-            result = conn.execute(text("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' AND table_name = 'sales'
-                )
-            """))
-            exists = result.scalar()
-            # Verifica se está vazia
-            empty = True
-            if exists:
-                count = conn.execute(text("SELECT COUNT(*) FROM sales")).scalar()
-                empty = (count == 0)
-                # Verifica se a coluna 'date' existe
-                col_result = conn.execute(text("""
-                    SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
+            if IS_SQLITE:
+                result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
+                exists = result.fetchone() is not None
+                empty = True
+                if exists:
+                    count = conn.execute(text("SELECT COUNT(*) FROM sales;")).scalar()
+                    empty = (count == 0)
+                    col_result = conn.execute(text("PRAGMA table_info(sales);"))
+                    has_date = False
+                    for row in col_result:
+                        if row[1] == 'date':
+                            has_date = True
+                            break
+                else:
+                    has_date = False
+            else:
+                result = conn.execute(text("""
+                    SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales'
                 """))
-                has_date = col_result.scalar() > 0
-                if not has_date:
-                    log("Corrigindo schema: adicionando coluna 'date'...")
-                    try:
-                        conn.execute(text("ALTER TABLE sales ADD COLUMN date DATE NOT NULL DEFAULT CURRENT_DATE;"))
-                        log("Coluna 'date' adicionada com sucesso.")
-                    except Exception as e:
-                        log(f"Erro ao adicionar coluna 'date': {e}")
-            if not exists or empty:
-                log("Resetando banco: executando 01_init.sql...")
-                sql_path = os.path.join(os.path.dirname(__file__), '../../sql/01_init.sql')
+                exists = result.scalar() > 0
+                empty = True
+                if exists:
+                    count = conn.execute(text("SELECT COUNT(*) FROM sales;")).scalar()
+                    empty = (count == 0)
+                    col_result = conn.execute(text("""
+                        SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
+                    """))
+                    has_date = col_result.scalar() > 0
+                else:
+                    has_date = False
+            if not exists or empty or not has_date:
+                log("Resetando banco: executando 02_reset_sales.sql...")
+                sql_path = os.path.join(os.path.dirname(__file__), '../../sql/02_reset_sales.sql')
                 with open(sql_path, 'r', encoding='utf-8') as f:
                     sql_script = f.read()
                 for stmt in sql_script.split(';'):
                     if stmt.strip():
-                        try:
-                            conn.execute(text(stmt))
-                        except Exception as e:
-                            log(f"Erro ao executar statement: {e}")
+                        conn.execute(text(stmt))
                 log("Banco resetado e populado com dados de exemplo.")
-                ensure_sales_schema()  # Garante que todas as colunas obrigatórias existem
             else:
-                ensure_sales_schema()  # Corrige schema mesmo se não resetar
-                log("Banco já inicializado, não será resetado novamente.")
+                log("Tabela 'sales' já existe, está correta e populada.")
     except Exception as e:
         log(f"Erro ao resetar banco: {e}")
