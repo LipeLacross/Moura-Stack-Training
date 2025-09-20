@@ -62,6 +62,7 @@ def init_db_if_needed():
 def reset_db_once():
     """
     Reseta o banco apenas se a tabela 'sales' não existir ou estiver vazia.
+    Se a tabela existir mas estiver sem a coluna 'date', corrige o schema.
     Executa o script completo de reset (DROP TABLE + CREATE TABLE + INSERT).
     """
     auto_reset = os.getenv("DB_AUTO_RESET", "true").lower() == "true"
@@ -83,6 +84,14 @@ def reset_db_once():
             if exists:
                 count = conn.execute(text("SELECT COUNT(*) FROM sales")).scalar()
                 empty = (count == 0)
+                # Verifica se a coluna 'date' existe
+                col_result = conn.execute(text("""
+                    SELECT column_name FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
+                """))
+                has_date = col_result.rowcount > 0
+                if not has_date:
+                    log("Corrigindo schema: adicionando coluna 'date'...")
+                    conn.execute(text("ALTER TABLE sales ADD COLUMN date DATE NOT NULL DEFAULT CURRENT_DATE;"))
             if not exists or empty:
                 log("Resetando banco: executando 01_init.sql...")
                 sql_path = os.path.join(os.path.dirname(__file__), '../../sql/01_init.sql')
