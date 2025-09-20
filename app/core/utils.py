@@ -1,10 +1,18 @@
 import os
+import re
 from sqlalchemy import text
 from app.backend.db import engine
 
 
 def log(msg: str):
     print(f"[DB INIT] {msg}")
+
+
+def process_sql_script(sql_script: str) -> str:
+    # Remove CASCADE de todos os comandos DROP TABLE IF EXISTS ... CASCADE
+    sql_script = re.sub(r"DROP TABLE IF EXISTS ([^;]+) CASCADE", r"DROP TABLE IF EXISTS \1", sql_script)
+    # Remover adaptações para SQLite, manter padrão PostgreSQL
+    return sql_script
 
 
 def table_exists(table_name: str = "sales") -> bool:
@@ -52,7 +60,6 @@ def init_db_if_needed():
             with open(sql_path, 'r', encoding='utf-8') as f:
                 sql_script = f.read()
             with engine.connect() as conn:
-                import re
                 # Remove CASCADE de todos os comandos DROP TABLE IF EXISTS ... CASCADE
                 sql_script = re.sub(r"DROP TABLE IF EXISTS ([^;]+) CASCADE", r"DROP TABLE IF EXISTS \1", sql_script)
                 # Remove blocos CREATE OR REPLACE FUNCTION ... END;
@@ -178,7 +185,6 @@ def reset_db_once():
                 sql_path = os.path.join(os.path.dirname(__file__), '../../sql/02_reset_sales.sql')
                 with open(sql_path, 'r', encoding='utf-8') as f:
                     sql_script = f.read()
-                import re
                 # Remove CASCADE de todos os comandos DROP TABLE IF EXISTS ... CASCADE
                 sql_script = re.sub(r"DROP TABLE IF EXISTS ([^;]+) CASCADE", r"DROP TABLE IF EXISTS \1", sql_script)
                 # Remove blocos CREATE OR REPLACE FUNCTION ... END;
