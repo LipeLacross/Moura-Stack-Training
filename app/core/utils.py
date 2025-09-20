@@ -61,8 +61,11 @@ def init_db_if_needed():
             log(f"[DEBUG] Script SQL lido:\n{sql_script[:500]}")
             sql_script = process_sql_script(sql_script)
             drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
-            create_sales = re.search(r"CREATE TABLE sales[\s\S]+?\)\s*", sql_script)
+            # Regex mais robusto para encontrar CREATE TABLE sales
+            create_sales = re.search(r"CREATE TABLE\s+sales\s*\([\s\S]+?\);", sql_script, re.IGNORECASE)
             log(f"[DEBUG] Encontrado CREATE TABLE sales: {bool(create_sales)}")
+            if not create_sales:
+                log("[ERRO] CREATE TABLE sales não encontrado no script SQL! Verifique o arquivo 02_reset_sales.sql.")
             import time
             max_attempts = 3
             for attempt in range(max_attempts):
@@ -173,7 +176,7 @@ def reset_db_once():
                 # Executa DROP/CREATE isolado
                 import re
                 drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
-                create_sales = re.search(r"CREATE TABLE sales[\s\S]+?\)\s*", sql_script)
+                create_sales = re.search(r"CREATE TABLE\s+sales\s*\([\s\S]+?\);", sql_script, re.IGNORECASE)
                 # Executa DROP isolado com retry e isolamento AUTOCOMMIT
                 import time
                 max_attempts = 3
