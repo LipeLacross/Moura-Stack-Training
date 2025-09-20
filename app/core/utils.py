@@ -91,7 +91,7 @@ def init_db_if_needed():
                             break
                 # Verifica se a tabela foi removida
                 with engine.connect() as conn_check:
-                    result = conn_check.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
+                    result = conn_check.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='sales';"))
                     if result.fetchone():
                         log("Tabela sales ainda existe após DROP. Abortando CREATE.")
                     else:
@@ -219,7 +219,7 @@ def reset_db_once():
                             break
                 # Verifica se a tabela foi removida
                 with engine.connect() as conn_check:
-                    result = conn_check.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
+                    result = conn_check.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='sales';"))
                     if result.fetchone():
                         log("Tabela sales ainda existe após DROP. Abortando CREATE.")
                     else:
