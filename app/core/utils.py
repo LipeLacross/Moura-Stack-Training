@@ -59,6 +59,35 @@ def init_db_if_needed():
         log(f"Erro ao inicializar banco: {e}")
 
 
+def ensure_sales_schema():
+    """
+    Garante que todas as colunas obrigatórias existem na tabela sales, corrigindo o schema automaticamente.
+    """
+    required_columns = [
+        ('date', "DATE NOT NULL DEFAULT CURRENT_DATE"),
+        ('customer_id', "INT"),
+        ('status', "TEXT DEFAULT 'paid'"),
+        ('created_at', "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"),
+        ('updated_at', "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"),
+        ('notes', "TEXT"),
+        ('user_id', "INT"),
+        ('category', "TEXT"),
+        ('payment_method', "TEXT")
+    ]
+    with engine.connect() as conn:
+        for col, coltype in required_columns:
+            result = conn.execute(text(f"""
+                SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = '{col}'
+            """))
+            exists = result.scalar() > 0
+            if not exists:
+                try:
+                    conn.execute(text(f"ALTER TABLE sales ADD COLUMN {col} {coltype};"))
+                    log(f"Coluna '{col}' adicionada ao schema sales.")
+                except Exception as e:
+                    log(f"Erro ao adicionar coluna '{col}': {e}")
+
+
 def reset_db_once():
     """
     Reseta o banco apenas se a tabela 'sales' não existir ou estiver vazia.
@@ -108,7 +137,9 @@ def reset_db_once():
                         except Exception as e:
                             log(f"Erro ao executar statement: {e}")
                 log("Banco resetado e populado com dados de exemplo.")
+                ensure_sales_schema()  # Garante que todas as colunas obrigatórias existem
             else:
+                ensure_sales_schema()  # Corrige schema mesmo se não resetar
                 log("Banco já inicializado, não será resetado novamente.")
     except Exception as e:
         log(f"Erro ao resetar banco: {e}")
