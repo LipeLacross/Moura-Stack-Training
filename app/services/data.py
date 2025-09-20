@@ -19,15 +19,18 @@ CACHE_TTL_MINUTES = 5  # Tempo em minutos para o cache expirar
 
 # TODO(refactor, 2025-09-18, consolidar validações de schema se dado crescer)
 
-def load_sales_df(use_cache: bool = True) -> pd.DataFrame:
+def load_sales_df(use_cache: bool = True, start_date: str = None, end_date: str = None, product: str = None) -> pd.DataFrame:
     """
-    Carrega os dados de vendas do CSV ou do banco de dados.
-    
+    Carrega os dados de vendas do banco de dados ou CSV, aplicando filtros opcionais.
+
     Args:
         use_cache: Se True, usa os dados em cache se disponíveis e não expirados
-        
+        start_date: Data inicial (YYYY-MM-DD)
+        end_date: Data final (YYYY-MM-DD)
+        product: Nome do produto para filtrar
+
     Returns:
-        DataFrame com os dados de vendas
+        DataFrame com os dados de vendas filtrados
     """
     global _CACHED_DATA, _LAST_UPDATE
     
@@ -40,27 +43,34 @@ def load_sales_df(use_cache: bool = True) -> pd.DataFrame:
     # Carrega os dados da fonte
     source = os.getenv("ETL_SOURCE", "csv")
     if source == "postgres":
+        query = """
+            SELECT order_id, region, product, quantity, unit_price, COALESCE(total, quantity*unit_price) AS total, date
+            FROM sales
+            WHERE 1=1
+        """
+        params = {}
+        if start_date:
+            query += " AND date >= :start_date"
+            params['start_date'] = start_date
+        if end_date:
+            query += " AND date <= :end_date"
+            params['end_date'] = end_date
+        if product and product.lower() != 'todos os produtos':
+            query += " AND product = :product"
+            params['product'] = product
+        query += " ORDER BY order_id"
         with engine.connect() as conn:
-            df = pd.read_sql(
-                text("""
-                    SELECT 
-                        order_id, 
-                        region, 
-                        product, 
-                        quantity, 
-                        unit_price, 
-                        COALESCE(total, quantity*unit_price) AS total 
-                    FROM sales 
-                    ORDER BY order_id
-                """),
-                conn
-            )
+            df = pd.read_sql(text(query), conn, params=params)
     else:
         csv_path = os.getenv("ETL_CSV_PATH", "data/sample_sales.csv")
         df = pd.read_csv(csv_path, parse_dates=['date'])
-        if "total" not in df.columns:
-            df["total"] = df["quantity"] * df["unit_price"]
-    
+        if start_date:
+            df = df[df['date'] >= pd.to_datetime(start_date)]
+        if end_date:
+            df = df[df['date'] <= pd.to_datetime(end_date)]
+        if product and product.lower() != 'todos os produtos':
+            df = df[df['product'] == product]
+
     # Garante que a coluna de data está no formato correto
     if 'date' not in df.columns:
         # Se não houver coluna de data, cria uma com a data atual
