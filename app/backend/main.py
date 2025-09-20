@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from app.backend.routers import health, metrics, stats, ml, etl, gold, extras
 from app.services.data import load_sales_df, compute_summary
-from app.core.utils import init_db_if_needed, reset_db_once
+from app.core.utils import init_db_if_needed
 import logging
 import pandas as pd
 
@@ -26,9 +26,6 @@ try:
     logging.info("[STARTUP] Templates Jinja2 inicializados.")
 except Exception as e:
     logging.error(f"[STARTUP] Erro ao inicializar templates: {e}")
-
-# Reset controlado do banco na inicialização
-reset_db_once()
 
 app = FastAPI(title="Moura Stack API", version="1.2.0")
 
