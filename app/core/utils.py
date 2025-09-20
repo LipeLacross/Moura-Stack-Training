@@ -60,27 +60,17 @@ def init_db_if_needed():
                 sql_script = f.read()
             log(f"[DEBUG] Script SQL lido:\n{sql_script[:500]}")
             sql_script = process_sql_script(sql_script)
-            drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
-            # Regex mais robusto para encontrar CREATE TABLE sales
-            create_sales = re.search(r"CREATE TABLE\s+sales\s*\([\s\S]+?\);", sql_script, re.IGNORECASE)
-            log(f"[DEBUG] Encontrado CREATE TABLE sales: {bool(create_sales)}")
-            if not create_sales:
-                log("[ERRO] CREATE TABLE sales não encontrado no script SQL! Verifique o arquivo 02_reset_sales.sql.")
-            import time
-            max_attempts = 3
-            for attempt in range(max_attempts):
-                try:
-                    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn_drop:
-                        conn_drop.execute(text("DROP TABLE IF EXISTS sales"))
-                    log("[DEBUG] DROP TABLE sales executado.")
-                    break
-                except Exception as e:
-                    log(f"Erro ao executar DROP TABLE sales isolado (tentativa {attempt+1}): {e}")
-                    if "database is locked" in str(e) and attempt < max_attempts - 1:
-                        log("Se o erro persistir, feche todos os processos/editores que estejam usando o arquivo moura.db e tente novamente.")
-                        time.sleep(2)
-                    else:
-                        break
+            # Extract the CREATE TABLE sales statement for potential later use
+            create_sales = re.search(r'(?s)CREATE TABLE sales\b.*?\)\s*;', sql_script, re.IGNORECASE)
+            try:
+                with engine.connect() as conn:
+                    log("[DEBUG] Executando script SQL completo via cursor nativo...")
+                    cursor = conn.connection.cursor()
+                    cursor.execute(sql_script)
+                    cursor.close()
+                    log("[DEBUG] Script SQL completo executado.")
+            except Exception as e:
+                log(f"[ERRO] Falha ao executar script SQL completo: {e}")
             with engine.connect() as conn_check:
                 result = conn_check.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='sales';"))
                 if result.fetchone():
