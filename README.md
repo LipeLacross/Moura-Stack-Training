@@ -38,7 +38,7 @@ O projeto também integra **Power BI embed**, estatística (Pearson/OLS) e machi
 - **ML:** Scikit-learn (Regressão Linear)
 - **ETL/Big Data:** Prefect, PySpark, Parquet (PyArrow)
 - **Modelagem de Dados:** dbt
-- **Dev/Qualidade:** Black, Ruff, Docker
+- **Dev/Qualidade:** Black, Docker
 
 ---
 

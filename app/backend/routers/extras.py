@@ -1,7 +1,10 @@
 from __future__ import annotations
-import io
-from fastapi import APIRouter
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi import APIRouter, Response
+import io, base64
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
 from app.services.data import load_sales_df
 from app.backend.routers.spark_job import run_spark_job
 
@@ -20,3 +23,35 @@ def export_excel():  # type: ignore[override]
 def spark_run():  # type: ignore[override]
     res = run_spark_job()
     return JSONResponse(res)
+
+@router.get("/plotly-sales")
+def plotly_sales():
+    df = load_sales_df()
+    fig = px.bar(df, x="product", y="total", color="region", title="Receita por Produto (Plotly)")
+    return fig.to_json()
+
+@router.get("/matplotlib-sales")
+def matplotlib_sales():
+    df = load_sales_df()
+    fig, ax = plt.subplots(figsize=(7,4))
+    df.groupby("product")['total'].sum().plot(kind='bar', ax=ax, color='skyblue')
+    ax.set_title("Receita por Produto (Matplotlib)")
+    buf = io.BytesIO()
+    plt.tight_layout()
+    fig.savefig(buf, format='png')
+    plt.close(fig)
+    img_b64 = base64.b64encode(buf.getvalue()).decode()
+    return {"image": f"data:image/png;base64,{img_b64}"}
+
+@router.get("/seaborn-sales")
+def seaborn_sales():
+    df = load_sales_df()
+    plt.figure(figsize=(7,4))
+    sns.barplot(data=df, x="product", y="total", hue="region")
+    plt.title("Receita por Produto (Seaborn)")
+    buf = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format='png')
+    plt.close()
+    img_b64 = base64.b64encode(buf.getvalue()).decode()
+    return {"image": f"data:image/png;base64,{img_b64}"}
