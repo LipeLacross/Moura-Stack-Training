@@ -4,8 +4,11 @@ from sqlalchemy import text
 from app.backend.db import engine
 
 
-def log(msg: str):
-    print(f"[DB INIT] {msg}")
+def log(msg: str, level: str = "INFO"):
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+    levels = ["ERROR", "WARNING", "INFO", "DEBUG"]
+    if levels.index(level) <= levels.index(log_level):
+        print(f"[{level}] {msg}")
 
 
 def process_sql_script(sql_script: str) -> str:

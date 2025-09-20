@@ -32,7 +32,7 @@ CREATE TRIGGER trg_set_total
 BEFORE INSERT OR UPDATE ON sales
 FOR EACH ROW EXECUTE PROCEDURE set_total();
 
-CREATE TABLE product_revenue (
+CREATE TABLE IF NOT EXISTS product_revenue (
   product TEXT PRIMARY KEY,
   revenue NUMERIC(18,2) NOT NULL DEFAULT 0
 );
