@@ -58,17 +58,18 @@ def init_db_if_needed():
             sql_path = os.path.join(os.path.dirname(__file__), '../../sql/02_reset_sales.sql')
             with open(sql_path, 'r', encoding='utf-8') as f:
                 sql_script = f.read()
+            log(f"[DEBUG] Script SQL lido:\n{sql_script[:500]}")
             sql_script = process_sql_script(sql_script)
-            # Executa DROP/CREATE isolado
-            import re
             drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
             create_sales = re.search(r"CREATE TABLE sales[\s\S]+?\)\s*", sql_script)
+            log(f"[DEBUG] Encontrado CREATE TABLE sales: {bool(create_sales)}")
             import time
             max_attempts = 3
             for attempt in range(max_attempts):
                 try:
                     with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn_drop:
                         conn_drop.execute(text("DROP TABLE IF EXISTS sales"))
+                    log("[DEBUG] DROP TABLE sales executado.")
                     break
                 except Exception as e:
                     log(f"Erro ao executar DROP TABLE sales isolado (tentativa {attempt+1}): {e}")
@@ -77,17 +78,18 @@ def init_db_if_needed():
                         time.sleep(2)
                     else:
                         break
-            # Verifica se a tabela foi removida
             with engine.connect() as conn_check:
                 result = conn_check.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='sales';"))
                 if result.fetchone():
                     log("Tabela sales ainda existe após DROP. Abortando CREATE.")
                 else:
-                    # Executa CREATE isolado
                     if create_sales:
                         try:
+                            log(f"[DEBUG] Executando CREATE TABLE sales:")
+                            log(create_sales.group())
                             with engine.connect() as conn_create:
                                 conn_create.execute(text(create_sales.group()))
+                            log("[DEBUG] CREATE TABLE sales executado.")
                         except Exception as e:
                             log(f"Erro ao executar CREATE TABLE sales isolado: {e}")
             # Remove apenas DROP/CREATE da tabela sales para não executar novamente
