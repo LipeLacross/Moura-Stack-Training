@@ -13,9 +13,9 @@ def test_postgres_connection(db_url):
         return False
 
 def run_postgres_reset():
-    db_url = os.getenv("POSTGRES_URL", "postgresql://postgres:postgres@localhost:5432/moura")
-    if not test_postgres_connection(db_url):
-        print("Abortando reset: conexão com Postgres indisponível.")
+    db_url = os.getenv("DATABASE_URL", "")
+    if not db_url or not test_postgres_connection(db_url):
+        print("Abortando reset: conexão com Postgres indisponível ou DATABASE_URL não definida.")
         return
     engine = create_engine(db_url)
     sql_path = os.path.join(os.path.dirname(__file__), '../../sql/02_reset_sales.sql')
@@ -31,7 +31,7 @@ def run_postgres_reset():
     print("Banco Postgres resetado e populado com dados de exemplo.")
 
 def check_date_column():
-    db_url = os.getenv("POSTGRES_URL", "postgresql://postgres:postgres@localhost:5432/moura")
+    db_url = os.getenv("DATABASE_URL", "")
     engine = create_engine(db_url)
     try:
         with engine.connect() as conn:

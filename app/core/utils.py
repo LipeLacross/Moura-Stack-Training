@@ -1,6 +1,6 @@
 import os
 from sqlalchemy import text
-from app.backend.db import engine, DB_TYPE
+from app.backend.db import engine
 
 
 def log(msg: str):
@@ -19,13 +19,10 @@ def table_exists(table_name: str = "sales") -> bool:
 
 
 def get_db_info():
-    if DB_TYPE == "sqlite":
-        return "sqlite", None
-    else:
-        with engine.connect() as conn:
-            db = conn.execute(text("SELECT current_database()"))
-            schema = conn.execute(text("SELECT current_schema()"))
-            return db.scalar(), schema.scalar()
+    with engine.connect() as conn:
+        db = conn.execute(text("SELECT current_database()"))
+        schema = conn.execute(text("SELECT current_schema()"))
+        return db.scalar(), schema.scalar()
 
 
 def init_db_if_needed():
@@ -41,85 +38,73 @@ def init_db_if_needed():
         db_name, schema_name = get_db_info()
         log(f"Conectado ao banco: {db_name}")
         with engine.connect() as conn:
-            if DB_TYPE == "sqlite":
-                result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
-                table_exists = result.fetchone() is not None
-                has_date = False
-                if table_exists:
-                    col_result = conn.execute(text("PRAGMA table_info(sales);"))
-                    for row in col_result:
-                        if row[1] == 'date':
-                            has_date = True
-                            break
-            else:
-                result = conn.execute(text("""
-                    SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales'
-                """))
-                table_exists = result.scalar() > 0
-                col_result = conn.execute(text("""
-                    SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
-                """))
-                has_date = col_result.scalar() > 0
+            result = conn.execute(text("""
+                SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales'
+            """))
+            table_exists = result.scalar() > 0
+            col_result = conn.execute(text("""
+                SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
+            """))
+            has_date = col_result.scalar() > 0
         if not table_exists or not has_date:
             log("Tabela 'sales' não existe ou está com schema incorreto. Executando 02_reset_sales.sql...")
             sql_path = os.path.join(os.path.dirname(__file__), '../../sql/02_reset_sales.sql')
             with open(sql_path, 'r', encoding='utf-8') as f:
                 sql_script = f.read()
             with engine.connect() as conn:
-                if DB_TYPE == "sqlite":
-                    import re
-                    # Remove CASCADE de todos os comandos DROP TABLE IF EXISTS ... CASCADE
-                    sql_script = re.sub(r"DROP TABLE IF EXISTS ([^;]+) CASCADE", r"DROP TABLE IF EXISTS \1", sql_script)
-                    # Remove blocos CREATE OR REPLACE FUNCTION ... END;
-                    sql_script = re.sub(r"CREATE OR REPLACE FUNCTION[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
-                    # Remove comandos CREATE TRIGGER ... END;
-                    sql_script = re.sub(r"CREATE TRIGGER[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
-                    # Remove linhas com $$, LANGUAGE plpgsql, DROP TRIGGER ... ON ...
-                    sql_script = re.sub(r"^.*\$\$.*$", "", sql_script, flags=re.MULTILINE)
-                    sql_script = re.sub(r"^.*LANGUAGE plpgsql.*$", "", sql_script, flags=re.MULTILINE)
-                    sql_script = re.sub(r"^DROP TRIGGER IF EXISTS.*ON.*$", "", sql_script, flags=re.MULTILINE)
-                    # Substitui SERIAL por INTEGER PRIMARY KEY AUTOINCREMENT
-                    sql_script = re.sub(r"SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT", sql_script)
-                    # Substitui NUMERIC por REAL
-                    sql_script = re.sub(r"NUMERIC\([0-9,]+\)", "REAL", sql_script)
-                    sql_script = re.sub(r"NUMERIC", "REAL", sql_script)
-                    # Remove DEFAULT CURRENT_DATE se não suportado
-                    sql_script = re.sub(r"DEFAULT CURRENT_DATE", "", sql_script)
-                    # Isola DROP/CREATE da tabela sales
-                    drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
-                    create_sales = re.search(r"CREATE TABLE sales[\s\S]+?\)\s*", sql_script)
-                    # Executa DROP isolado
-                    import time
-                    max_attempts = 3
-                    for attempt in range(max_attempts):
-                        try:
-                            with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn_drop:
-                                conn_drop.execute(text("DROP TABLE IF EXISTS sales"))
-                            break
-                        except Exception as e:
-                            log(f"Erro ao executar DROP TABLE sales isolado (tentativa {attempt+1}): {e}")
-                            if "database is locked" in str(e) and attempt < max_attempts - 1:
-                                log("Se o erro persistir, feche todos os processos/editores que estejam usando o arquivo moura.db e tente novamente.")
-                                import time
-                                time.sleep(2)
-                            else:
-                                break
-                    # Verifica se a tabela foi removida
-                    with engine.connect() as conn_check:
-                        result = conn_check.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
-                        if result.fetchone():
-                            log("Tabela sales ainda existe após DROP. Abortando CREATE.")
+                import re
+                # Remove CASCADE de todos os comandos DROP TABLE IF EXISTS ... CASCADE
+                sql_script = re.sub(r"DROP TABLE IF EXISTS ([^;]+) CASCADE", r"DROP TABLE IF EXISTS \1", sql_script)
+                # Remove blocos CREATE OR REPLACE FUNCTION ... END;
+                sql_script = re.sub(r"CREATE OR REPLACE FUNCTION[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
+                # Remove comandos CREATE TRIGGER ... END;
+                sql_script = re.sub(r"CREATE TRIGGER[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
+                # Remove linhas com $$, LANGUAGE plpgsql, DROP TRIGGER ... ON ...
+                sql_script = re.sub(r"^.*\$\$.*$", "", sql_script, flags=re.MULTILINE)
+                sql_script = re.sub(r"^.*LANGUAGE plpgsql.*$", "", sql_script, flags=re.MULTILINE)
+                sql_script = re.sub(r"^DROP TRIGGER IF EXISTS.*ON.*$", "", sql_script, flags=re.MULTILINE)
+                # Substitui SERIAL por INTEGER PRIMARY KEY AUTOINCREMENT
+                sql_script = re.sub(r"SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT", sql_script)
+                # Substitui NUMERIC por REAL
+                sql_script = re.sub(r"NUMERIC\([0-9,]+\)", "REAL", sql_script)
+                sql_script = re.sub(r"NUMERIC", "REAL", sql_script)
+                # Remove DEFAULT CURRENT_DATE se não suportado
+                sql_script = re.sub(r"DEFAULT CURRENT_DATE", "", sql_script)
+                # Isola DROP/CREATE da tabela sales
+                drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
+                create_sales = re.search(r"CREATE TABLE sales[\s\S]+?\)\s*", sql_script)
+                # Executa DROP isolado
+                import time
+                max_attempts = 3
+                for attempt in range(max_attempts):
+                    try:
+                        with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn_drop:
+                            conn_drop.execute(text("DROP TABLE IF EXISTS sales"))
+                        break
+                    except Exception as e:
+                        log(f"Erro ao executar DROP TABLE sales isolado (tentativa {attempt+1}): {e}")
+                        if "database is locked" in str(e) and attempt < max_attempts - 1:
+                            log("Se o erro persistir, feche todos os processos/editores que estejam usando o arquivo moura.db e tente novamente.")
+                            import time
+                            time.sleep(2)
                         else:
-                            # Executa CREATE isolado
-                            if create_sales:
-                                try:
-                                    with engine.connect() as conn_create:
-                                        conn_create.execute(text(create_sales.group()))
-                                except Exception as e:
-                                    log(f"Erro ao executar CREATE TABLE sales isolado: {e}")
-                    # Remove DROP/CREATE do script para não executar novamente
-                    sql_script = re.sub(r"DROP TABLE IF EXISTS sales;?", "", sql_script)
-                    sql_script = re.sub(r"CREATE TABLE sales[\s\S]+?\)\s*;?", "", sql_script)
+                            break
+                # Verifica se a tabela foi removida
+                with engine.connect() as conn_check:
+                    result = conn_check.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
+                    if result.fetchone():
+                        log("Tabela sales ainda existe após DROP. Abortando CREATE.")
+                    else:
+                        # Executa CREATE isolado
+                        if create_sales:
+                            try:
+                                with engine.connect() as conn_create:
+                                    conn_create.execute(text(create_sales.group()))
+                            except Exception as e:
+                                log(f"Erro ao executar CREATE TABLE sales isolado: {e}")
+                # Remove DROP/CREATE do script para não executar novamente
+                sql_script = re.sub(r"DROP TABLE IF EXISTS sales;?", "", sql_script)
+                sql_script = re.sub(r"CREATE TABLE sales[\s\S]+?\)\s*;?", "", sql_script)
                 for stmt in sql_script.split(';'):
                     if stmt.strip():
                         try:
@@ -174,97 +159,80 @@ def reset_db_once():
         return
     try:
         with engine.connect() as conn:
-            if DB_TYPE == "sqlite":
-                result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
-                exists = result.fetchone() is not None
-                empty = True
-                if exists:
-                    count = conn.execute(text("SELECT COUNT(*) FROM sales;")).scalar()
-                    empty = (count == 0)
-                    col_result = conn.execute(text("PRAGMA table_info(sales);"))
-                    has_date = False
-                    for row in col_result:
-                        if row[1] == 'date':
-                            has_date = True
-                            break
-                else:
-                    has_date = False
-            else:
-                result = conn.execute(text("""
-                    SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales'
+            result = conn.execute(text("""
+                SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales'
+            """))
+            exists = result.scalar() > 0
+            empty = True
+            if exists:
+                count = conn.execute(text("SELECT COUNT(*) FROM sales;")).scalar()
+                empty = (count == 0)
+                col_result = conn.execute(text("""
+                    SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
                 """))
-                exists = result.scalar() > 0
-                empty = True
-                if exists:
-                    count = conn.execute(text("SELECT COUNT(*) FROM sales;")).scalar()
-                    empty = (count == 0)
-                    col_result = conn.execute(text("""
-                        SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'sales' AND column_name = 'date'
-                    """))
-                    has_date = col_result.scalar() > 0
-                else:
-                    has_date = False
+                has_date = col_result.scalar() > 0
+            else:
+                has_date = False
             if not exists or empty or not has_date:
                 log("Resetando banco: executando 02_reset_sales.sql...")
                 sql_path = os.path.join(os.path.dirname(__file__), '../../sql/02_reset_sales.sql')
                 with open(sql_path, 'r', encoding='utf-8') as f:
                     sql_script = f.read()
-                if DB_TYPE == "sqlite":
-                    import re
-                    # Remove CASCADE de todos os comandos DROP TABLE IF EXISTS ... CASCADE
-                    sql_script = re.sub(r"DROP TABLE IF EXISTS ([^;]+) CASCADE", r"DROP TABLE IF EXISTS \1", sql_script)
-                    # Remove blocos CREATE OR REPLACE FUNCTION ... END;
-                    sql_script = re.sub(r"CREATE OR REPLACE FUNCTION[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
-                    # Remove comandos CREATE TRIGGER ... END;
-                    sql_script = re.sub(r"CREATE TRIGGER[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
-                    # Remove linhas com $$, LANGUAGE plpgsql, DROP TRIGGER ... ON ...
-                    sql_script = re.sub(r"^.*\$\$.*$", "", sql_script, flags=re.MULTILINE)
-                    sql_script = re.sub(r"^.*LANGUAGE plpgsql.*$", "", sql_script, flags=re.MULTILINE)
-                    sql_script = re.sub(r"^DROP TRIGGER IF EXISTS.*ON.*$", "", sql_script, flags=re.MULTILINE)
-                    # Substitui SERIAL por INTEGER PRIMARY KEY AUTOINCREMENT
-                    sql_script = re.sub(r"SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT", sql_script)
-                    # Substitui NUMERIC por REAL
-                    sql_script = re.sub(r"NUMERIC\([0-9,]+\)", "REAL", sql_script)
-                    sql_script = re.sub(r"NUMERIC", "REAL", sql_script)
-                    # Remove DEFAULT CURRENT_DATE se não suportado
-                    sql_script = re.sub(r"DEFAULT CURRENT_DATE", "", sql_script)
-                    # Isola DROP/CREATE da tabela sales
-                    drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
-                    create_sales = re.search(r"CREATE TABLE sales[\s\S]+?\)\s*", sql_script)
-                    # Executa DROP isolado com retry e isolamento AUTOCOMMIT
-                    import time
-                    max_attempts = 3
-                    for attempt in range(max_attempts):
-                        try:
-                            # Usa AUTOCOMMIT para evitar erro de configuração
-                            with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn_drop:
-                                conn_drop.execute(text("DROP TABLE IF EXISTS sales"))
-                            break
-                        except Exception as e:
-                            log(f"Erro ao executar DROP TABLE sales isolado (tentativa {attempt+1}): {e}")
-                            if "database is locked" in str(e) and attempt < max_attempts - 1:
-                                log("Se o erro persistir, feche todos os processos/editores que estejam usando o arquivo moura.db e tente novamente.")
-                                import time
-                                time.sleep(2)
-                            else:
-                                log("Se o erro persistir, feche outros processos/terminais que estejam usando o banco SQLite.")
-                                break
-                    # Verifica se a tabela foi removida
-                    with engine.connect() as conn_check:
-                        result = conn_check.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
-                        if result.fetchone():
-                            log("Tabela sales ainda existe após DROP. Abortando CREATE.")
+                import re
+                # Remove CASCADE de todos os comandos DROP TABLE IF EXISTS ... CASCADE
+                sql_script = re.sub(r"DROP TABLE IF EXISTS ([^;]+) CASCADE", r"DROP TABLE IF EXISTS \1", sql_script)
+                # Remove blocos CREATE OR REPLACE FUNCTION ... END;
+                sql_script = re.sub(r"CREATE OR REPLACE FUNCTION[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
+                # Remove comandos CREATE TRIGGER ... END;
+                sql_script = re.sub(r"CREATE TRIGGER[\s\S]+?END;", "", sql_script, flags=re.IGNORECASE)
+                # Remove linhas com $$, LANGUAGE plpgsql, DROP TRIGGER ... ON ...
+                sql_script = re.sub(r"^.*\$\$.*$", "", sql_script, flags=re.MULTILINE)
+                sql_script = re.sub(r"^.*LANGUAGE plpgsql.*$", "", sql_script, flags=re.MULTILINE)
+                sql_script = re.sub(r"^DROP TRIGGER IF EXISTS.*ON.*$", "", sql_script, flags=re.MULTILINE)
+                # Substitui SERIAL por INTEGER PRIMARY KEY AUTOINCREMENT
+                sql_script = re.sub(r"SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT", sql_script)
+                # Substitui NUMERIC por REAL
+                sql_script = re.sub(r"NUMERIC\([0-9,]+\)", "REAL", sql_script)
+                sql_script = re.sub(r"NUMERIC", "REAL", sql_script)
+                # Remove DEFAULT CURRENT_DATE se não suportado
+                sql_script = re.sub(r"DEFAULT CURRENT_DATE", "", sql_script)
+                # Isola DROP/CREATE da tabela sales
+                drop_sales = re.search(r"DROP TABLE IF EXISTS sales", sql_script)
+                create_sales = re.search(r"CREATE TABLE sales[\s\S]+?\)\s*", sql_script)
+                # Executa DROP isolado com retry e isolamento AUTOCOMMIT
+                import time
+                max_attempts = 3
+                for attempt in range(max_attempts):
+                    try:
+                        # Usa AUTOCOMMIT para evitar erro de configuração
+                        with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn_drop:
+                            conn_drop.execute(text("DROP TABLE IF EXISTS sales"))
+                        break
+                    except Exception as e:
+                        log(f"Erro ao executar DROP TABLE sales isolado (tentativa {attempt+1}): {e}")
+                        if "database is locked" in str(e) and attempt < max_attempts - 1:
+                            log("Se o erro persistir, feche todos os processos/editores que estejam usando o arquivo moura.db e tente novamente.")
+                            import time
+                            time.sleep(2)
                         else:
-                            # Executa CREATE isolado
-                            if create_sales:
-                                try:
-                                    with engine.connect() as conn_create:
-                                        conn_create.execute(text(create_sales.group()))
-                                except Exception as e:
-                                    log(f"Erro ao executar CREATE TABLE sales isolado: {e}")
-                    # Remove DROP/CREATE do script para não executar novamente
-                    sql_script = re.sub(r"DROP TABLE IF EXISTS sales;?", "", sql_script)
-                    sql_script = re.sub(r"CREATE TABLE sales[\s\S]+?\)\s*;?", "", sql_script)
+                            log("Se o erro persistir, feche outros processos/terminais que estejam usando o banco SQLite.")
+                            break
+                # Verifica se a tabela foi removida
+                with engine.connect() as conn_check:
+                    result = conn_check.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sales';"))
+                    if result.fetchone():
+                        log("Tabela sales ainda existe após DROP. Abortando CREATE.")
+                    else:
+                        # Executa CREATE isolado
+                        if create_sales:
+                            try:
+                                with engine.connect() as conn_create:
+                                    conn_create.execute(text(create_sales.group()))
+                            except Exception as e:
+                                log(f"Erro ao executar CREATE TABLE sales isolado: {e}")
+                # Remove DROP/CREATE do script para não executar novamente
+                sql_script = re.sub(r"DROP TABLE IF EXISTS sales;?", "", sql_script)
+                sql_script = re.sub(r"CREATE TABLE sales[\s\S]+?\)\s*;?", "", sql_script)
                 for stmt in sql_script.split(';'):
                     if stmt.strip():
                         try:
