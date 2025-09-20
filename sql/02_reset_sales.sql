@@ -1,5 +1,8 @@
--- Tabela base
-CREATE TABLE IF NOT EXISTS sales (
+-- Formatação completa do banco de dados para vendas
+DROP TABLE IF EXISTS sales CASCADE;
+DROP TABLE IF EXISTS product_revenue CASCADE;
+
+CREATE TABLE sales (
   order_id    SERIAL PRIMARY KEY,
   region      TEXT NOT NULL,
   product     TEXT NOT NULL,
@@ -17,7 +20,6 @@ CREATE TABLE IF NOT EXISTS sales (
   payment_method TEXT
 );
 
--- Função/Trigger para manter total = quantity * unit_price
 CREATE OR REPLACE FUNCTION set_total() RETURNS trigger AS $$
 BEGIN
   NEW.total := NEW.quantity * NEW.unit_price;
@@ -30,13 +32,11 @@ CREATE TRIGGER trg_set_total
 BEFORE INSERT OR UPDATE ON sales
 FOR EACH ROW EXECUTE PROCEDURE set_total();
 
--- Tabela agregada (exemplo)
-CREATE TABLE IF NOT EXISTS product_revenue (
+CREATE TABLE product_revenue (
   product TEXT PRIMARY KEY,
   revenue NUMERIC(18,2) NOT NULL DEFAULT 0
 );
 
--- Procedure para consolidar receita por produto
 CREATE OR REPLACE PROCEDURE upsert_product_revenue()
 LANGUAGE plpgsql
 AS $$
@@ -47,7 +47,7 @@ BEGIN
 END;
 $$;
 
--- Dados de exemplo (50 registros variados)
+-- Dados de exemplo (50 registros)
 INSERT INTO sales (region, product, quantity, unit_price, date, customer_id, status, created_at, updated_at, notes, user_id, category, payment_method) VALUES
 ('Norte','Bateria A',10,200,'2025-08-01',101,'paid','2025-08-01','2025-08-01','Venda normal',1,'Automotiva','dinheiro'),
 ('Sul','Bateria B',5,350,'2025-08-02',102,'pending','2025-08-02','2025-08-02','Aguardando pagamento',2,'Automotiva','cartao'),
@@ -98,5 +98,6 @@ INSERT INTO sales (region, product, quantity, unit_price, date, customer_id, sta
 ('Nordeste','Bateria H',7,175,'2025-09-16',107,'pending','2025-09-16','2025-09-16','Cliente pediu prazo',2,'Residencial','cartao'),
 ('Sudeste','Bateria I',12,230,'2025-09-17',108,'paid','2025-09-17','2025-09-17','Venda normal',3,'Residencial','boleto'),
 ('Centro-Oeste','Bateria J',14,205,'2025-09-18',109,'cancelled','2025-09-18','2025-09-18','Cliente desistiu',4,'Industrial','dinheiro');
+
 -- Chamar a procedure (opcional)
 -- CALL upsert_product_revenue();
