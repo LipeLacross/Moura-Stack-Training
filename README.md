@@ -10,7 +10,7 @@ O projeto também integra **Power BI embed**, estatística (Pearson/OLS) e machi
 ## 🔨 Funcionalidades do Projeto
 - **API REST (FastAPI)**  
   Endpoints: `/health`, `/metrics/sales`, `/metrics/summary`, `/stats/pearson`, `/stats/ols`, `/ml/train`, `/ml/predict`, `/etl/run`, `/gold/export`, `/export/excel`, `/spark/run`.
-- **Dashboard Jinja** com KPIs, gráficos interativos (Plotly) e estáticos (Matplotlib/Seaborn).
+- **Dashboard Jinja** com KPIs, gráficos interativos (Plotly) e estáticos (Matplotlib/Seaborn), chart js . d3js
 - **Banco de Dados PostgreSQL**: tabela `sales`, trigger `set_total` e procedure `upsert_product_revenue`.
 - **ETL com Prefect**: fluxo para gerar Parquet/CSV (camada Gold).
 - **PySpark**: job para processamento em larga escala.
@@ -34,7 +34,7 @@ O projeto também integra **Power BI embed**, estatística (Pearson/OLS) e machi
 - **Backend:** FastAPI, Pydantic, Uvicorn, SQLAlchemy
 - **Banco de Dados:** PostgreSQL (psycopg2)
 - **Frontend/BI:** Jinja + Power BI embed
-- **Análises:** Pandas, NumPy, Plotly, Matplotlib, Seaborn, Statsmodels
+- **Análises:** Pandas, NumPy, Plotly, Matplotlib, Seaborn, Statsmodels chart js e d3js
 - **ML:** Scikit-learn (Regressão Linear)
 - **ETL/Big Data:** Prefect, PySpark, Parquet (PyArrow)
 - **Modelagem de Dados:** dbt

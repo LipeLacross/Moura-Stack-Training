@@ -359,7 +359,43 @@ services:
   </div>
 </div>
 
+<!-- Machine Learning (Regressão Linear) -->
+<div class="mb-8 bg-card p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Machine Learning — Regressão Linear</h2>
+  <div id="ml-results" class="text-sm text-kpi"></div>
+</div>
 
+<!-- Big Data (PySpark) -->
+<div class="mb-8 bg-card p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Big Data — Receita Total por Produto (PySpark)</h2>
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200" id="spark-table">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receita Total</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200" id="spark-table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Gráficos Interativos -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-card border border-border rounded-lg p-6 shadow">
+    <h2 class="text-xl font-semibold mb-4 text-primary">Plotly</h2>
+    <div id="plotly-chart"></div>
+  </div>
+  <div class="bg-card border border-border rounded-lg p-6 shadow">
+    <h2 class="text-xl font-semibold mb-4 text-primary">Matplotlib</h2>
+    <img id="matplotlib-img" class="w-full h-64 object-contain" />
+  </div>
+  <div class="bg-card border border-border rounded-lg p-6 shadow">
+    <h2 class="text-xl font-semibold mb-4 text-primary">Seaborn</h2>
+    <img id="seaborn-img" class="w-full h-64 object-contain" />
+  </div>
+</div>
 
 <script>
   // Função para copiar curl para clipboard
@@ -527,6 +563,32 @@ services:
         }
       }
     });
+  });
+  // Machine Learning
+  fetch('/ml/linear-regression').then(r => r.json()).then(data => {
+    document.getElementById('ml-results').innerHTML = `
+      <b>Coeficiente:</b> ${data.coef.toFixed(2)}<br>
+      <b>Intercepto:</b> ${data.intercept.toFixed(2)}<br>
+      <b>Score (R²):</b> ${(data.score*100).toFixed(2)}%<br>
+      <b>Previsão para quantidade média (${data.mean_quantity.toFixed(2)}):</b> R$ ${data.predicted_total.toFixed(2)}
+    `;
+  });
+  // Big Data
+  fetch('/bigdata/spark-aggregates').then(r => r.json()).then(rows => {
+    const tbody = document.getElementById('spark-table-body');
+    tbody.innerHTML = rows.map(row => `<tr><td class='px-6 py-4'>${row.product}</td><td class='px-6 py-4'>R$ ${parseFloat(row.total_revenue).toFixed(2)}</td></tr>`).join('');
+  });
+  // Plotly
+  fetch('/plotly-sales').then(r => r.json()).then(fig => {
+    Plotly.newPlot('plotly-chart', fig.data, fig.layout);
+  });
+  // Matplotlib
+  fetch('/matplotlib-sales').then(r => r.json()).then(data => {
+    document.getElementById('matplotlib-img').src = data.image;
+  });
+  // Seaborn
+  fetch('/seaborn-sales').then(r => r.json()).then(data => {
+    document.getElementById('seaborn-img').src = data.image;
   });
 </script>
 {% endblock %}

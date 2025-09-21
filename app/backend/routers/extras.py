@@ -57,3 +57,38 @@ def seaborn_sales():
     plt.close()
     img_b64 = base64.b64encode(buf.getvalue()).decode()
     return {"image": f"data:image/png;base64,{img_b64}"}
+
+@router.get("/ml/linear-regression")
+def linear_regression():
+    df = load_sales_df()
+    # Exemplo: prever receita total a partir da quantidade
+    X = df[["quantity"]]
+    y = df["total"]
+    from sklearn.linear_model import LinearRegression
+    model = LinearRegression().fit(X, y)
+    score = model.score(X, y)
+    coef = model.coef_[0]
+    intercept = model.intercept_
+    # Previsão para quantidade média
+    mean_qty = np.mean(df["quantity"])
+    pred = model.predict([[mean_qty]])[0]
+    return {
+        "coef": coef,
+        "intercept": intercept,
+        "score": score,
+        "mean_quantity": mean_qty,
+        "predicted_total": pred
+    }
+
+@router.get("/bigdata/spark-aggregates")
+def spark_aggregates():
+    from pyspark.sql import SparkSession
+    import pandas as pd
+    df = load_sales_df()
+    spark = SparkSession.builder.master("local[*]").appName("SalesAgg").getOrCreate()
+    sdf = spark.createDataFrame(df)
+    agg = sdf.groupBy("product").sum("total").toPandas()
+    spark.stop()
+    # Renomeia coluna para clareza
+    agg = agg.rename(columns={"sum(total)": "total_revenue"})
+    return agg.to_dict(orient="records")

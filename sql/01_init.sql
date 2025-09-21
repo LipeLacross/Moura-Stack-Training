@@ -104,6 +104,8 @@ INSERT INTO sales (region, product, quantity, unit_price, date, customer_id, sta
 ('Sul','Bateria G',10,340,'2025-09-15',106,'paid','2025-09-15','2025-09-15','Venda recorrente',1,'Automotiva','dinheiro'),
 ('Nordeste','Bateria H',7,175,'2025-09-16',107,'pending','2025-09-16','2025-09-16','Cliente pediu prazo',2,'Residencial','cartao'),
 ('Sudeste','Bateria I',12,230,'2025-09-17',108,'paid','2025-09-17','2025-09-17','Venda normal',3,'Residencial','boleto'),
-('Centro-Oeste','Bateria J',14,205,'2025-09-18',109,'cancelled','2025-09-18','2025-09-18','Cliente desistiu',4,'Industrial','dinheiro');
+('Centro-Oeste','Bateria J',14,205,'2025-09-18',109,'cancelled','2025-09-18','2025-09-18','Cliente desistiu',4,'Industrial','dinheiro'),
+('Nordeste','Bateria S',8,190,'2025-09-19',110,'paid','2025-09-19','2025-09-19','Venda extra',5,'Residencial','cartao'),
+('Sudeste','Bateria T',6,240,'2025-09-20',101,'pending','2025-09-20','2025-09-20','Cliente pediu desconto',1,'Industrial','boleto');
 -- Chamar a procedure (opcional)
 -- CALL upsert_product_revenue();
