@@ -397,6 +397,33 @@ services:
   </div>
 </div>
 
+<!-- Análises Estatísticas (Statsmodels) -->
+<div class="mb-8 bg-card p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4 text-primary">Análises Estatísticas</h2>
+  <div id="pearson-result" class="mb-4 text-sm text-kpi"></div>
+  <div id="ols-result" class="text-sm text-kpi"></div>
+</div>
+<script>
+  // Pearson
+  fetch('/stats/pearson').then(r => r.json()).then(data => {
+    document.getElementById('pearson-result').innerHTML = `
+      <b>Correlação Pearson:</b> ${data.correlation.toFixed(3)}<br>
+      <b>p-valor:</b> ${data.p_value.toExponential(2)}<br>
+      <b>Variáveis:</b> ${data.x_name} × ${data.y_name}
+    `;
+  });
+  // OLS
+  fetch('/stats/ols').then(r => r.json()).then(data => {
+    document.getElementById('ols-result').innerHTML = `
+      <b>Regressão OLS:</b><br>
+      <b>Coeficiente:</b> ${data.coef.toFixed(2)}<br>
+      <b>Intercepto:</b> ${data.intercept.toFixed(2)}<br>
+      <b>R²:</b> ${data.r2.toFixed(3)}<br>
+      <b>p-valor:</b> ${data.p_value.toExponential(2)}
+    `;
+  });
+</script>
+
 <script>
   // Função para copiar curl para clipboard
   function copyToClipboard(cmd) {
@@ -574,7 +601,7 @@ services:
     `;
   });
   // Big Data
-  fetch('/bigdata/spark-aggregates').then(r => r.json()).then(rows => {
+  fetch('/bigdata/spark-aggregates').then r => r.json()).then(rows => {
     const tbody = document.getElementById('spark-table-body');
     tbody.innerHTML = rows.map(row => `<tr><td class='px-6 py-4'>${row.product}</td><td class='px-6 py-4'>R$ ${parseFloat(row.total_revenue).toFixed(2)}</td></tr>`).join('');
   });
