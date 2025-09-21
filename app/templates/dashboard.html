@@ -6,6 +6,9 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  .chart-container { position: relative; height: 320px; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -405,4 +408,65 @@ services:
   <p class="text-xs text-gray-600 mb-2">Gráfico apresenta resultados de testes estatísticos e modelagens aplicadas aos dados de vendas.</p>
   <img src="/public/statistics.png" alt="Análises Estatísticas" class="w-full h-64 object-contain" />
 </div>
+
+<!-- Scripts para gráficos interativos Chart.js -->
+<script>
+// Dados simulados para Receita por Período
+const revenueData = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+  datasets: [{
+    label: 'Receita',
+    data: [12000, 15000, 18000, 14000, 17000, 16000],
+    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+    borderColor: 'rgba(54, 162, 235, 1)',
+    borderWidth: 2,
+    fill: true,
+    tension: 0.3
+  }]
+};
+const revenueConfig = {
+  type: 'line',
+  data: revenueData,
+  options: {
+    responsive: true,
+    plugins: { legend: { display: true } },
+    scales: { y: { beginAtZero: true } }
+  }
+};
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revenueCtx, revenueConfig);
+
+// Dados simulados para Distribuição por Categoria
+const categoryData = {
+  labels: ['Produto A', 'Produto B', 'Produto C', 'Produto D'],
+  datasets: [{
+    label: 'Vendas',
+    data: [40, 25, 20, 15],
+    backgroundColor: [
+      'rgba(255, 99, 132, 0.6)',
+      'rgba(54, 162, 235, 0.6)',
+      'rgba(255, 206, 86, 0.6)',
+      'rgba(75, 192, 192, 0.6)'
+    ],
+    borderColor: [
+      'rgba(255, 99, 132, 1)',
+      'rgba(54, 162, 235, 1)',
+      'rgba(255, 206, 86, 1)',
+      'rgba(75, 192, 192, 1)'
+    ],
+    borderWidth: 1
+  }]
+};
+const categoryConfig = {
+  type: 'bar',
+  data: categoryData,
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  }
+};
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+new Chart(categoryCtx, categoryConfig);
+</script>
 {% endblock %}
