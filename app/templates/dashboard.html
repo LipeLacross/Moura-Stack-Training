@@ -372,297 +372,34 @@ services:
 <!-- Machine Learning (Regressão Linear) -->
 <div class="mb-8 bg-card p-6 rounded-lg shadow">
   <h2 class="text-xl font-semibold mb-4 text-primary">Machine Learning — Regressão Linear</h2>
-  <div id="ml-results" class="text-sm text-kpi"></div>
+  <img src="/public/ml_regression.png" alt="Regressão Linear" class="w-full h-64 object-contain" />
 </div>
 
 <!-- Big Data (PySpark) -->
 <div class="mb-8 bg-card p-6 rounded-lg shadow">
   <h2 class="text-xl font-semibold mb-4 text-primary">Big Data — Receita Total por Produto (PySpark)</h2>
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200" id="spark-table">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receita Total</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200" id="spark-table-body"></tbody>
-    </table>
-  </div>
+  <img src="/public/pyspark_agg.png" alt="PySpark Aggregates" class="w-full h-64 object-contain" />
 </div>
 
 <!-- Gráficos Interativos -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
   <div class="bg-card border border-border rounded-lg p-6 shadow">
     <h2 class="text-xl font-semibold mb-4 text-primary">Plotly</h2>
-    <div id="plotly-chart"></div>
+    <img src="/public/plotly.png" alt="Plotly Chart" class="w-full h-64 object-contain" />
   </div>
   <div class="bg-card border border-border rounded-lg p-6 shadow">
     <h2 class="text-xl font-semibold mb-4 text-primary">Matplotlib</h2>
-    <img id="matplotlib-img" class="w-full h-64 object-contain" />
+    <img src="/public/matplotlib.png" alt="Matplotlib Chart" class="w-full h-64 object-contain" />
   </div>
   <div class="bg-card border border-border rounded-lg p-6 shadow">
     <h2 class="text-xl font-semibold mb-4 text-primary">Seaborn</h2>
-    <img id="seaborn-img" class="w-full h-64 object-contain" />
+    <img src="/public/seaborn.png" alt="Seaborn Chart" class="w-full h-64 object-contain" />
   </div>
 </div>
 
-<!-- Análises Estatísticas (Statsmodels) -->
+<!-- Análises Estatísticas -->
 <div class="mb-8 bg-card p-6 rounded-lg shadow">
   <h2 class="text-xl font-semibold mb-4 text-primary">Análises Estatísticas</h2>
-  <div id="pearson-result" class="mb-4 text-sm text-kpi"></div>
-  <div id="ols-result" class="text-sm text-kpi"></div>
+  <img src="/public/statistics.png" alt="Análises Estatísticas" class="w-full h-64 object-contain" />
 </div>
-<script>
-ç  // Pearson
-  fetch('/stats/pearson').then(r => r.json()).then(data => {
-    document.getElementById('pearson-result').innerHTML = `
-      <b>Correlação Pearson:</b> ${data.correlation.toFixed(3)}<br>
-      <b>p-valor:</b> ${data.p_value.toExponential(2)}<br>
-      <b>Variáveis:</b> ${data.x_name} × ${data.y_name}
-    `;
-  });
-  // OLS
-  fetch('/stats/ols').then(r => r.json()).then(data => {
-    document.getElementById('ols-result').innerHTML = `
-      <b>Regressão OLS:</b><br>
-      <b>Coeficiente:</b> ${data.coef.toFixed(2)}<br>
-      <b>Intercepto:</b> ${data.intercept.toFixed(2)}<br>
-      <b>R²:</b> ${data.r2.toFixed(3)}<br>
-      <b>p-valor:</b> ${data.p_value.toExponential(2)}
-    `;
-  });
-</script>
-
-<script>
-  // Função para copiar curl para clipboard
-  function copyToClipboard(cmd) {
-    navigator.clipboard.writeText(cmd);
-    alert('Comando copiado!');
-  }
-  document.querySelectorAll('.copy-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      copyToClipboard(this.dataset.cmd);
-    });
-  });
-  // Filtros, pesquisa e gráficos
-  let currentPage = 1;
-  const pageSize = 20;
-  async function fetchSales(filters = {}) {
-    filters.page = currentPage;
-    filters.page_size = pageSize;
-    const params = new URLSearchParams(filters).toString();
-    const res = await fetch(`/metrics/sales?${params}`); // Corrigido endpoint
-    return await res.json();
-  }
-  function getColumnFilters() {
-    return {
-      order_id: document.getElementById('filter-order_id').value,
-      region: document.getElementById('filter-region').value,
-      product: document.getElementById('filter-product').value,
-      quantity: document.getElementById('filter-quantity').value,
-      unit_price: document.getElementById('filter-unit_price').value,
-      total: document.getElementById('filter-total').value
-    };
-  }
-  function renderTable(sales) {
-    const tbody = document.getElementById('sales-table-body');
-    tbody.innerHTML = '';
-    sales.forEach(sale => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${sale.date ? new Date(sale.date).toLocaleDateString() : ''}</td><td>${sale.product}</td><td>${sale.quantity}</td><td>R$ ${Number(sale.unit_price).toFixed(2)}</td><td>R$ ${Number(sale.total).toFixed(2)}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
-  async function updateTableAndCharts() {
-    const filters = getColumnFilters();
-    const result = await fetchSales(filters);
-    renderTable(result.data);
-    renderCharts(result.data); // Atualiza gráficos com dados filtrados
-    document.getElementById('start-item').textContent = ((currentPage-1)*pageSize+1);
-    document.getElementById('end-item').textContent = Math.min(currentPage*pageSize, result.pagination.total_items);
-    document.getElementById('total-items').textContent = result.pagination.total_items;
-  }
-  document.getElementById('apply-filters').onclick = async function() {
-    currentPage = 1;
-    await updateTableAndCharts();
-  };
-  document.getElementById('search-sales').oninput = async function(e) {
-    currentPage = 1;
-    document.getElementById('filter-product').value = e.target.value;
-    await updateTableAndCharts();
-  };
-  document.getElementById('prev-page').onclick = async function() {
-    if (currentPage > 1) {
-      currentPage--;
-      await updateTableAndCharts();
-    }
-  };
-  document.getElementById('next-page').onclick = async function() {
-    currentPage++;
-    await updateTableAndCharts();
-  };
-  document.getElementById('filter-order_id').oninput = updateTableAndCharts;
-  document.getElementById('filter-region').oninput = updateTableAndCharts;
-  document.getElementById('filter-product').oninput = updateTableAndCharts;
-  document.getElementById('filter-quantity').oninput = updateTableAndCharts;
-  document.getElementById('filter-unit_price').oninput = updateTableAndCharts;
-  document.getElementById('filter-total').oninput = updateTableAndCharts;
-  window.onload = async function() {
-    await updateTableAndCharts();
-  };
-  function renderCharts(sales) {
-    // Receita por período
-    const ctx1 = document.getElementById('revenueChart').getContext('2d');
-    const revenueData = {};
-    sales.forEach(sale => {
-      const d = sale.date;
-      revenueData[d] = (revenueData[d] || 0) + sale.total;
-    });
-    new Chart(ctx1, {
-      type: 'line',
-      data: {
-        labels: Object.keys(revenueData),
-        datasets: [{label: 'Receita', data: Object.values(revenueData), borderColor: '#2563eb'}]
-      }
-    });
-    // Distribuição por categoria
-    const ctx2 = document.getElementById('categoryChart').getContext('2d');
-    const catData = {};
-    sales.forEach(sale => {
-      catData[sale.product] = (catData[sale.product] || 0) + sale.total;
-    });
-    new Chart(ctx2, {
-      type: 'doughnut',
-      data: {
-        labels: Object.keys(catData),
-        datasets: [{label: 'Receita', data: Object.values(catData), backgroundColor: ['#2563eb','#22d3ee','#f59e42','#f43f5e','#a3e635']}]
-      }
-    });
-  }
-  async function renderAllCharts() {
-    // Chart.js
-    const salesRes = await fetch('/api/sales');
-    const salesData = await salesRes.json();
-    const ctx = document.getElementById('chartjsChart').getContext('2d');
-    const chartjs = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: salesData.sales.map(s => s.product),
-        datasets: [{label: 'Receita', data: salesData.sales.map(s => s.total), backgroundColor: '#2563eb'}]
-      }
-    });
-    // Plotly.js
-    const plotlyRes = await fetch('/extras/plotly-sales');
-    const plotlyJson = await plotlyRes.json();
-    Plotly.newPlot('plotlyChart', plotlyJson.data, plotlyJson.layout);
-    // Matplotlib
-    const mplRes = await fetch('/extras/matplotlib-sales');
-    const mplJson = await mplRes.json();
-    document.getElementById('matplotlibChart').src = mplJson.image;
-    // Seaborn
-    const sbRes = await fetch('/extras/seaborn-sales');
-    const sbJson = await sbRes.json();
-    document.getElementById('seabornChart').src = sbJson.image;
-    // D3.js
-    const svg = d3.select('#d3Chart');
-    svg.selectAll('*').remove();
-    const margin = {top: 20, right: 20, bottom: 30, left: 40}, width = 400 - margin.left - margin.right, height = 350 - margin.top - margin.bottom;
-    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
-    const x = d3.scaleBand().range([0, width]).padding(0.1);
-    const y = d3.scaleLinear().range([height, 0]);
-    x.domain(salesData.sales.map(s => s.product));
-    y.domain([0, d3.max(salesData.sales, s => s.total)]);
-    g.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x));
-    g.append('g').call(d3.axisLeft(y));
-    g.selectAll('.bar').data(salesData.sales).enter().append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => x(d.product))
-      .attr('y', d => y(d.total))
-      .attr('width', x.bandwidth())
-      .attr('height', d => height - y(d.total))
-      .attr('fill', '#22d3ee');
-  }
-  window.onload = async function() {
-    const data = await fetchSales();
-    renderTable(data.sales);
-    renderCharts(data.sales);
-    await renderAllCharts();
-  };
-  function showToast(msg, success=true) {
-    const toast = document.createElement('div');
-    toast.textContent = msg;
-    toast.style.position = 'fixed';
-    toast.style.bottom = '30px';
-    toast.style.right = '30px';
-    toast.style.background = success ? '#2563eb' : '#f43f5e';
-    toast.style.color = '#fff';
-    toast.style.padding = '12px 24px';
-    toast.style.borderRadius = '8px';
-    toast.style.zIndex = 9999;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3500);
-  }
-  document.querySelectorAll('.exec-btn').forEach(btn => {
-    btn.addEventListener('click', async function() {
-      const endpoint = this.dataset.endpoint;
-      if (this.dataset.payload) {
-        // Abrir modal para input
-        document.getElementById('predict-modal').style.display = 'flex';
-        document.getElementById('predict-result').textContent = '';
-        document.getElementById('predict-confirm').onclick = async function() {
-          const quantity = document.getElementById('predict-quantity').value;
-          const unit_price = document.getElementById('predict-unit-price').value;
-          try {
-            const res = await fetch(endpoint, {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({quantity: Number(quantity), unit_price: Number(unit_price)})
-            });
-            const data = await res.json();
-            document.getElementById('predict-result').textContent = 'Predição: ' + (data.y_pred ?? JSON.stringify(data));
-            showToast('Predição realizada!', true);
-          } catch (e) {
-            document.getElementById('predict-result').textContent = 'Erro: ' + e;
-            showToast('Erro na predição!', false);
-          }
-        };
-      } else {
-        try {
-          const res = await fetch(endpoint, {method: 'POST'});
-          const data = await res.json();
-          showToast('Executado com sucesso: ' + JSON.stringify(data), true);
-        } catch (e) {
-          showToast('Erro: ' + e, false);
-        }
-      }
-    });
-  });
-  // Machine Learning
-  fetch('/ml/linear-regression').then(r => r.json()).then(data => {
-    document.getElementById('ml-results').innerHTML = `
-      <b>Coeficiente:</b> ${data.coef.toFixed(2)}<br>
-      <b>Intercepto:</b> ${data.intercept.toFixed(2)}<br>
-      <b>Score (R²):</b> ${(data.score*100).toFixed(2)}%<br>
-      <b>Previsão para quantidade média (${data.mean_quantity.toFixed(2)}):</b> R$ ${data.predicted_total.toFixed(2)}
-    `;
-  });
-  // Big Data
-  fetch('/bigdata/spark-aggregates').then r => r.json()).then(rows => {
-    const tbody = document.getElementById('spark-table-body');
-    tbody.innerHTML = rows.map(row => `<tr><td class='px-6 py-4'>${row.product}</td><td class='px-6 py-4'>R$ ${parseFloat(row.total_revenue).toFixed(2)}</td></tr>`).join('');
-  });
-  // Plotly
-  fetch('/plotly-sales').then r => r.json()).then(fig => {
-    Plotly.newPlot('plotly-chart', fig.data, fig.layout);
-  });
-  // Matplotlib
-  fetch('/matplotlib-sales').then(r => r.json()).then(data => {
-    document.getElementById('matplotlib-img').src = data.image;
-  });
-  // Seaborn
-  fetch('/seaborn-sales').then(r => r.json()).then(data => {
-    document.getElementById('seaborn-img').src = data.image;
-  });
-</script>
 {% endblock %}

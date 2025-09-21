@@ -41,5 +41,47 @@
   <footer class="mt-16 py-6 text-xs text-gray-500 text-center border-t border-border">
     Moura Stack • FastAPI • {{ year }}
   </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const applyBtn = document.getElementById('apply-filters');
+      if (applyBtn) {
+        applyBtn.addEventListener('click', async function() {
+          const startDate = document.getElementById('start-date').value;
+          const endDate = document.getElementById('end-date').value;
+          const product = document.getElementById('product-filter').value;
+          let url = `/metrics/sales?`;
+          if (startDate) url += `start_date=${startDate}&`;
+          if (endDate) url += `end_date=${endDate}&`;
+          if (product) url += `product=${encodeURIComponent(product)}&`;
+          try {
+            const res = await fetch(url);
+            const data = await res.json();
+            // Atualiza tabela de vendas
+            const tbody = document.getElementById('sales-table-body');
+            if (tbody && Array.isArray(data.sales)) {
+              tbody.innerHTML = data.sales.map(sale => `
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.date}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.product}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.quantity}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ ${parseFloat(sale.unit_price).toFixed(2)}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">R$ ${parseFloat(sale.total).toFixed(2)}</td>
+                </tr>
+              `).join('');
+            }
+            // Atualiza KPIs
+            if (data.summary) {
+              document.getElementById('revenue-kpi').querySelector('.text-primary').textContent = `R$ ${parseFloat(data.summary.total_revenue).toFixed(2)}`;
+              document.getElementById('quantity-kpi').querySelector('.text-primary').textContent = data.summary.total_quantity;
+              document.getElementById('avg-ticket-kpi').querySelector('.text-primary').textContent = `R$ ${parseFloat(data.summary.avg_ticket).toFixed(2)}`;
+            }
+            // TODO: Atualizar gráficos interativos se necessário
+          } catch (err) {
+            alert('Erro ao aplicar filtros.');
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
