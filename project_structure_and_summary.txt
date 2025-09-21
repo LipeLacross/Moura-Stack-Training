@@ -1,0 +1,101 @@
+# Moura Stack — Estrutura do Projeto e Resumo
+
+## Estrutura de Pastas
+
+- app/
+  - __init__.py
+  - backend/
+    - main.py
+    - models.py
+    - db.py
+    - routers/
+      - __init__.py
+      - etl.py
+      - extras.py
+      - flow_etl.py
+      - gold.py
+      - health.py
+      - metrics.py
+      - ml.py
+      - spark_job.py
+      - stats.py
+  - core/
+    - config.py
+    - utils.py
+  - services/
+    - data.py
+    - etl.py
+    - metrics.py
+    - ml.py
+    - stats.py
+  - templates/
+    - base.html
+    - dashboard.html
+- data/
+  - sample_sales.csv
+- public/
+  - moura-logo.ico
+  - moura-logo-1-2048x1651.png
+  - matplotlib.png
+  - plotly.png
+  - seaborn.png
+  - statistics.png
+- scripts/
+  - generate_charts/
+    - matplotlib_chart.py
+    - plotly_chart.py
+    - seaborn_chart.py
+    - statistics_chart.py
+    - pyspark_agg.py (não funcional sem Java)
+- dbt/
+  - dbt_project.yml
+  - models/
+    - stg_sales.sql
+    - fct_sales.sql
+- sql/
+  - 01_init.sql
+- Dockerfile
+- docker-compose.yml
+- requirements.txt
+- pyproject.toml
+- README.md
+
+## Resumo Funcional
+
+- **Frontend:**
+  - Dashboard web (Jinja2 + Tailwind) com KPIs, filtros, tabela de vendas, gráficos interativos (Chart.js) e imagens geradas (Matplotlib, Plotly, Seaborn, Estatísticas).
+  - Filtros dinâmicos (data, produto) atualizam KPIs e tabela via requisição AJAX.
+  - Cards informativos para imagens ausentes (PySpark/ML Regression) por falta de Java.
+  - Endpoints REST GET/POST visíveis, mas POST apenas executam operações backend e retornam JSON.
+
+- **Backend:**
+  - FastAPI organiza rotas por domínio (health, metrics, stats, ml, etl, gold, extras).
+  - Endpoints GET para KPIs, vendas, estatísticas, exportação de dados.
+  - Endpoints POST para treinar modelo ML, predição, ETL, exportação gold, job PySpark.
+  - Integração com dbt para modelagem de dados (camadas silver/gold).
+  - Scripts Python para geração de gráficos e análises estatísticas.
+
+- **Dados:**
+  - Base de vendas em sample_sales.csv.
+  - Exportação para Parquet/CSV via ETL/dbt.
+
+- **Infraestrutura:**
+  - Dockerfile e docker-compose para deploy local/cloud.
+  - Variáveis de ambiente e dependências organizadas.
+
+## Pontos de Atenção
+
+- Scripts PySpark e ML Regression não funcionam sem Java instalado.
+- Filtros funcionam para KPIs/tabela, mas gráficos interativos podem ser estendidos para atualização dinâmica.
+- Endpoints POST não alteram visualmente a dashboard, apenas retornam JSON.
+- Estrutura modular, fácil de manter e escalar.
+
+## Sugestões de Melhoria
+
+- Adaptar scripts PySpark/ML para rodar sem Java, usando pandas/scikit-learn.
+- Atualizar gráficos interativos após filtros.
+- Adicionar feedback visual para operações POST.
+- Documentar dependências e limitações no README.
+
+---
+Gerado por GitHub Copilot em 21/09/2025.

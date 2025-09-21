@@ -28,7 +28,8 @@
 
 <!-- Filtros -->
 <div class="mb-8 bg-card p-6 rounded-lg shadow">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Filtros</h2>
+  <h2 class="text-xl font-semibold mb-4 text-primary">Filtros <span title="Filtros permitem selecionar datas e produtos para refinar os dados exibidos." style="cursor:help;">ℹ️</span></h2>
+  <p class="text-xs text-gray-600 mb-2">Utilize os filtros abaixo para refinar os dados exibidos nos KPIs, gráficos e tabelas conforme período e produto desejado.</p>
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     <div>
       <label class="block text-sm font-medium text-kpi mb-1">Data Inicial</label>
@@ -57,7 +58,8 @@
 
 <!-- KPIs -->
 <div class="mb-8">
-  <h2 class="text-2xl font-bold mb-4 text-primary">Resumo de Vendas</h2>
+  <h2 class="text-2xl font-bold mb-4 text-primary">Resumo de Vendas <span title="KPIs são indicadores-chave de desempenho, como receita, quantidade e ticket médio." style="cursor:help;">ℹ️</span></h2>
+  <p class="text-xs text-gray-600 mb-2">KPIs mostram métricas agregadas do período selecionado: receita total, quantidade vendida e ticket médio.</p>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" id="kpi-container">
     <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col items-center relative" id="revenue-kpi">
       <div class="flex items-center gap-2 mb-2">
@@ -94,7 +96,8 @@
 
 <!-- Preview de vendas -->
 <div class="mb-8">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Preview de Vendas (API)</h2>
+  <h2 class="text-xl font-semibold mb-4 text-primary">Preview de Vendas (API) <span title="API REST permite acessar dados via endpoints, como /metrics/sales." style="cursor:help;">ℹ️</span></h2>
+  <p class="text-xs text-gray-600 mb-2">Exibe uma amostra dos dados retornados pelo endpoint <code>/metrics/sales</code>.</p>
   <div class="bg-card rounded-lg p-4 mb-4">
     <pre class="text-xs text-kpi" id="sales-preview"></pre>
     <div class="text-xs text-gray-400 mt-2">Endpoint: <a href="/metrics/sales" class="text-primary underline">/metrics/sales</a></div>
@@ -105,20 +108,17 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
   <div class="bg-card border border-border rounded-lg p-6 shadow">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-primary">Receita por Período</h2>
-      <div class="flex space-x-2">
-        <button class="time-filter-btn px-3 py-1 rounded border border-border bg-white text-sm" data-period="week">Semana</button>
-        <button class="time-filter-btn px-3 py-1 rounded border border-border bg-primary text-white text-sm" data-period="month">Mês</button>
-        <button class="time-filter-btn px-3 py-1 rounded border border-border bg-white text-sm" data-period="year">Ano</button>
-      </div>
+      <h2 class="text-xl font-semibold text-primary">Receita por Período <span title="Gráfico gerado com matplotlib, biblioteca Python para visualização de dados." style="cursor:help;">ℹ️</span></h2>
     </div>
+    <p class="text-xs text-gray-600 mb-2">Gráfico gerado com <b>matplotlib</b> mostrando a evolução da receita ao longo do tempo.</p>
     <div class="h-80">
       <canvas id="revenueChart"></canvas>
     </div>
   </div>
 
   <div class="bg-card border border-border rounded-lg p-6 shadow">
-    <h2 class="text-xl font-semibold mb-4 text-primary">Distribuição por Categoria</h2>
+    <h2 class="text-xl font-semibold mb-4 text-primary">Distribuição por Categoria <span title="Categoria agrupa produtos para análise de vendas." style="cursor:help;">ℹ️</span></h2>
+    <p class="text-xs text-gray-600 mb-2">Gráfico gerado com <b>matplotlib</b> mostrando a distribuição das vendas por categoria de produto.</p>
     <div class="h-80">
       <canvas id="categoryChart"></canvas>
     </div>
@@ -129,15 +129,10 @@
 <div class="bg-card border border-border rounded-lg shadow overflow-hidden mb-8">
   <div class="p-6">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-primary">Últimas Vendas</h2>
-      <div class="relative">
-        <input type="text" id="search-sales" placeholder="Buscar vendas..." class="pl-8 pr-4 py-2 border border-border rounded-lg">
-        <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </div>
+      <h2 class="text-xl font-semibold text-primary">Últimas Vendas <span title="Tabela mostra vendas recentes, permite busca e ordenação." style="cursor:help;">ℹ️</span></h2>
     </div>
-    
+    <p class="text-xs text-gray-600 mb-2">Tabela detalhada das vendas. Utilize os campos de busca e filtro para encontrar registros específicos.</p>
+
     <!-- Filtros de colunas -->
     <div class="mb-4 grid grid-cols-6 gap-2">
       <input type="text" id="filter-order_id" placeholder="order_id" class="p-2 border rounded text-xs" />
@@ -237,12 +232,13 @@
 
 <!-- Endpoints REST (GET/POST) -->
 <div class="mb-8">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Exemplos de API REST</h2>
+  <h2 class="text-xl font-semibold mb-4 text-primary">Exemplos de API REST <span title="API REST expõe endpoints para acessar ou modificar dados via HTTP." style="cursor:help;">ℹ️</span></h2>
+  <p class="text-xs text-gray-600 mb-2">Consuma os endpoints GET diretamente no navegador. Para POST, utilize os exemplos curl no terminal para executar rotinas de ML, ETL e exportação.</p>
   <div class="bg-card rounded-lg p-4 mb-4">
     <div class="mb-2 text-sm text-gray-700">Endpoints <b>GET</b> funcionam direto no navegador. Endpoints <b>POST</b> devem ser chamados via <b>curl</b> ou <b>fetch</b> (botão copiar disponível).</div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <h3 class="font-bold text-primary mb-2">GET</h3>
+        <h3 class="font-bold text-primary mb-2">GET <span title="Método GET retorna dados do servidor." style="cursor:help;">ℹ️</span></h3>
         <ul class="list-disc pl-6 text-kpi">
           <li><a href="/health" class="text-primary underline">/health</a> — Status da API e banco</li>
           <li><a href="/metrics/sales" class="text-primary underline">/metrics/sales</a> — Preview de vendas</li>
@@ -253,13 +249,13 @@
         </ul>
       </div>
       <div>
-        <h3 class="font-bold text-primary mb-2">POST</h3>
+        <h3 class="font-bold text-primary mb-2">POST <span title="Método POST envia dados ou executa rotinas no servidor." style="cursor:help;">ℹ️</span></h3>
         <ul class="list-disc pl-6 text-kpi">
-          <li>Treinar modelo ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /ml/train">Copiar curl</button>) <button class="exec-btn" data-endpoint="/ml/train">Executar</button></span></li>
-          <li>Predição ML <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST -H 'Content-Type: application/json' -d '{\"quantity\":10,\"unit_price\":200}' /ml/predict">Copiar curl</button>) <button class="exec-btn" data-endpoint="/ml/predict" data-payload="true">Executar</button></span></li>
-          <li>Executar ETL Prefect <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /etl/run">Copiar curl</button>) <button class="exec-btn" data-endpoint="/etl/run">Executar</button></span></li>
-          <li>Exportar Gold Parquet/CSV <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /gold/export">Copiar curl</button>) <button class="exec-btn" data-endpoint="/gold/export">Executar</button></span></li>
-          <li>Job PySpark <span class="text-xs text-gray-400">(<button class="copy-btn" data-cmd="curl -X POST /spark/run">Copiar curl</button>) <button class="exec-btn" data-endpoint="/spark/run">Executar</button></span></li>
+          <li>Treinar modelo ML <span title="Machine Learning: algoritmos que aprendem padrões dos dados." style="cursor:help;">ℹ️</span> <span class="text-xs text-gray-400">Exemplo: <code>curl -X POST /ml/train</code> <span title="curl é um comando para fazer requisições HTTP pelo terminal." style="cursor:help;">ℹ️</span></span></li>
+          <li>Predição ML <span title="Predição: estimar valores com base em dados e modelos treinados." style="cursor:help;">ℹ️</span> <span class="text-xs text-gray-400">Exemplo: <code>curl -X POST -H 'Content-Type: application/json' -d '{\"quantity\":10,\"unit_price\":200}' /ml/predict</code> <span title="curl é um comando para fazer requisições HTTP pelo terminal." style="cursor:help;">ℹ️</span></span></li>
+          <li>Executar ETL Prefect <span title="ETL: Extrair, Transformar e Carregar dados. Prefect é uma ferramenta de automação de ETL." style="cursor:help;">ℹ️</span> <span class="text-xs text-gray-400">Exemplo: <code>curl -X POST /etl/run</code> <span title="curl é um comando para fazer requisições HTTP pelo terminal." style="cursor:help;">ℹ️</span></span></li>
+          <li>Exportar Gold Parquet/CSV <span title="Parquet/CSV: formatos de arquivo para exportação de dados." style="cursor:help;">ℹ️</span> <span class="text-xs text-gray-400">Exemplo: <code>curl -X POST /gold/export</code> <span title="curl é um comando para fazer requisições HTTP pelo terminal." style="cursor:help;">ℹ️</span></span></li>
+          <li>Job PySpark <span title="PySpark: biblioteca para processamento distribuído de dados em larga escala." style="cursor:help;">ℹ️</span> <span class="text-xs text-gray-400">Exemplo: <code>curl -X POST /spark/run</code> <span title="curl é um comando para fazer requisições HTTP pelo terminal." style="cursor:help;">ℹ️</span></span></li>
         </ul>
       </div>
     </div>
@@ -371,35 +367,42 @@ services:
 
 <!-- Machine Learning (Regressão Linear) -->
 <div class="mb-8 bg-card p-6 rounded-lg shadow">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Machine Learning — Regressão Linear</h2>
+  <h2 class="text-xl font-semibold mb-4 text-primary">Machine Learning — Regressão Linear <span title="Regressão Linear: técnica para prever valores com base em relações matemáticas." style="cursor:help;">ℹ️</span><br><span class="text-xs text-gray-500 font-normal">Imagem gerada com <b>scikit-learn</b> para modelagem, <b>matplotlib</b> para visualização e <b>pandas</b> para manipulação dos dados.</span></h2>
+  <p class="text-xs text-gray-600 mb-2">Este gráfico mostra a relação entre variáveis de vendas e o modelo de regressão linear treinado.</p>
   <img src="/public/ml_regression.png" alt="Regressão Linear" class="w-full h-64 object-contain" />
 </div>
 
 <!-- Big Data (PySpark) -->
 <div class="mb-8 bg-card p-6 rounded-lg shadow">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Big Data — Receita Total por Produto (PySpark)</h2>
+  <h2 class="text-xl font-semibold mb-4 text-primary">Big Data — Receita Total por Produto (PySpark) <span title="PySpark: biblioteca para processamento distribuído de dados em larga escala." style="cursor:help;">ℹ️</span><br><span class="text-xs text-gray-500 font-normal">Imagem gerada com <b>PySpark</b> para processamento distribuído e <b>matplotlib</b> para visualização. <b>Java</b> é obrigatório para execução do PySpark.</span></h2>
+  <p class="text-xs text-gray-600 mb-2">Gráfico mostra a receita total agregada por produto, processada em larga escala com PySpark.</p>
   <img src="/public/pyspark_agg.png" alt="PySpark Aggregates" class="w-full h-64 object-contain" />
+  <div class="text-xs text-yellow-700 mt-2">Se a imagem não aparecer, verifique se o Java está instalado e a variável <code>JAVA_HOME</code> está configurada.</div>
 </div>
 
 <!-- Gráficos Interativos -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
   <div class="bg-card border border-border rounded-lg p-6 shadow">
-    <h2 class="text-xl font-semibold mb-4 text-primary">Plotly</h2>
+    <h2 class="text-xl font-semibold mb-4 text-primary">Plotly <span title="Plotly: biblioteca para gráficos interativos em Python." style="cursor:help;">ℹ️</span><br><span class="text-xs text-gray-500 font-normal">Imagem gerada com <b>plotly</b> para gráficos interativos.</span></h2>
+    <p class="text-xs text-gray-600 mb-2">Gráfico interativo para análise visual dinâmica dos dados de vendas.</p>
     <img src="/public/plotly.png" alt="Plotly Chart" class="w-full h-64 object-contain" />
   </div>
   <div class="bg-card border border-border rounded-lg p-6 shadow">
-    <h2 class="text-xl font-semibold mb-4 text-primary">Matplotlib</h2>
+    <h2 class="text-xl font-semibold mb-4 text-primary">Matplotlib <span title="Matplotlib: biblioteca para gráficos estáticos em Python." style="cursor:help;">ℹ️</span><br><span class="text-xs text-gray-500 font-normal">Imagem gerada com <b>matplotlib</b> para gráficos estáticos.</span></h2>
+    <p class="text-xs text-gray-600 mb-2">Gráfico estático mostrando métricas agregadas das vendas.</p>
     <img src="/public/matplotlib.png" alt="Matplotlib Chart" class="w-full h-64 object-contain" />
   </div>
   <div class="bg-card border border-border rounded-lg p-6 shadow">
-    <h2 class="text-xl font-semibold mb-4 text-primary">Seaborn</h2>
+    <h2 class="text-xl font-semibold mb-4 text-primary">Seaborn <span title="Seaborn: biblioteca para gráficos estatísticos em Python." style="cursor:help;">ℹ️</span><br><span class="text-xs text-gray-500 font-normal">Imagem gerada com <b>seaborn</b> para gráficos estatísticos.</span></h2>
+    <p class="text-xs text-gray-600 mb-2">Gráfico estatístico para análise de correlações e distribuições dos dados.</p>
     <img src="/public/seaborn.png" alt="Seaborn Chart" class="w-full h-64 object-contain" />
   </div>
 </div>
 
 <!-- Análises Estatísticas -->
 <div class="mb-8 bg-card p-6 rounded-lg shadow">
-  <h2 class="text-xl font-semibold mb-4 text-primary">Análises Estatísticas</h2>
+  <h2 class="text-xl font-semibold mb-4 text-primary">Análises Estatísticas <span title="Análises estatísticas: técnicas para entender padrões e relações nos dados." style="cursor:help;">ℹ️</span><br><span class="text-xs text-gray-500 font-normal">Imagem gerada com <b>matplotlib</b>, <b>scipy</b> e <b>statsmodels</b> para análises estatísticas avançadas.</span></h2>
+  <p class="text-xs text-gray-600 mb-2">Gráfico apresenta resultados de testes estatísticos e modelagens aplicadas aos dados de vendas.</p>
   <img src="/public/statistics.png" alt="Análises Estatísticas" class="w-full h-64 object-contain" />
 </div>
 {% endblock %}
