@@ -138,6 +138,16 @@
       </div>
     </div>
     
+    <!-- Filtros de colunas -->
+    <div class="mb-4 grid grid-cols-6 gap-2">
+      <input type="text" id="filter-order_id" placeholder="order_id" class="p-2 border rounded text-xs" />
+      <input type="text" id="filter-region" placeholder="region" class="p-2 border rounded text-xs" />
+      <input type="text" id="filter-product" placeholder="product" class="p-2 border rounded text-xs" />
+      <input type="text" id="filter-quantity" placeholder="quantity" class="p-2 border rounded text-xs" />
+      <input type="text" id="filter-unit_price" placeholder="unit_price" class="p-2 border rounded text-xs" />
+      <input type="text" id="filter-total" placeholder="total" class="p-2 border rounded text-xs" />
+    </div>
+
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200" id="sales-table">
         <thead class="bg-gray-50">
@@ -404,7 +414,7 @@ services:
   <div id="ols-result" class="text-sm text-kpi"></div>
 </div>
 <script>
-  // Pearson
+ç  // Pearson
   fetch('/stats/pearson').then(r => r.json()).then(data => {
     document.getElementById('pearson-result').innerHTML = `
       <b>Correlação Pearson:</b> ${data.correlation.toFixed(3)}<br>
@@ -436,33 +446,70 @@ services:
     });
   });
   // Filtros, pesquisa e gráficos
+  let currentPage = 1;
+  const pageSize = 20;
   async function fetchSales(filters = {}) {
+    filters.page = currentPage;
+    filters.page_size = pageSize;
     const params = new URLSearchParams(filters).toString();
-    const res = await fetch(`/api/sales?${params}`);
+    const res = await fetch(`/metrics/sales?${params}`); // Corrigido endpoint
     return await res.json();
+  }
+  function getColumnFilters() {
+    return {
+      order_id: document.getElementById('filter-order_id').value,
+      region: document.getElementById('filter-region').value,
+      product: document.getElementById('filter-product').value,
+      quantity: document.getElementById('filter-quantity').value,
+      unit_price: document.getElementById('filter-unit_price').value,
+      total: document.getElementById('filter-total').value
+    };
   }
   function renderTable(sales) {
     const tbody = document.getElementById('sales-table-body');
     tbody.innerHTML = '';
     sales.forEach(sale => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${sale.date}</td><td>${sale.product}</td><td>${sale.quantity}</td><td>R$ ${sale.unit_price.toFixed(2)}</td><td>R$ ${sale.total.toFixed(2)}</td>`;
+      tr.innerHTML = `<td>${sale.date ? new Date(sale.date).toLocaleDateString() : ''}</td><td>${sale.product}</td><td>${sale.quantity}</td><td>R$ ${Number(sale.unit_price).toFixed(2)}</td><td>R$ ${Number(sale.total).toFixed(2)}</td>`;
       tbody.appendChild(tr);
     });
   }
+  async function updateTableAndCharts() {
+    const filters = getColumnFilters();
+    const result = await fetchSales(filters);
+    renderTable(result.data);
+    renderCharts(result.data); // Atualiza gráficos com dados filtrados
+    document.getElementById('start-item').textContent = ((currentPage-1)*pageSize+1);
+    document.getElementById('end-item').textContent = Math.min(currentPage*pageSize, result.pagination.total_items);
+    document.getElementById('total-items').textContent = result.pagination.total_items;
+  }
   document.getElementById('apply-filters').onclick = async function() {
-    const start = document.getElementById('start-date').value;
-    const end = document.getElementById('end-date').value;
-    const product = document.getElementById('product-filter').value;
-    const data = await fetchSales({start_date: start, end_date: end, product});
-    renderTable(data.sales);
-    renderCharts(data.sales);
+    currentPage = 1;
+    await updateTableAndCharts();
   };
   document.getElementById('search-sales').oninput = async function(e) {
-    const q = e.target.value.toLowerCase();
-    const data = await fetchSales();
-    const filtered = data.sales.filter(sale => sale.product.toLowerCase().includes(q));
-    renderTable(filtered);
+    currentPage = 1;
+    document.getElementById('filter-product').value = e.target.value;
+    await updateTableAndCharts();
+  };
+  document.getElementById('prev-page').onclick = async function() {
+    if (currentPage > 1) {
+      currentPage--;
+      await updateTableAndCharts();
+    }
+  };
+  document.getElementById('next-page').onclick = async function() {
+    currentPage++;
+    await updateTableAndCharts();
+  };
+  document.getElementById('filter-order_id').oninput = updateTableAndCharts;
+  document.getElementById('filter-region').oninput = updateTableAndCharts;
+  document.getElementById('filter-product').oninput = updateTableAndCharts;
+  document.getElementById('filter-quantity').oninput = updateTableAndCharts;
+  document.getElementById('filter-unit_price').oninput = updateTableAndCharts;
+  document.getElementById('filter-total').oninput = updateTableAndCharts;
+  window.onload = async function() {
+    await updateTableAndCharts();
   };
   function renderCharts(sales) {
     // Receita por período
@@ -606,7 +653,7 @@ services:
     tbody.innerHTML = rows.map(row => `<tr><td class='px-6 py-4'>${row.product}</td><td class='px-6 py-4'>R$ ${parseFloat(row.total_revenue).toFixed(2)}</td></tr>`).join('');
   });
   // Plotly
-  fetch('/plotly-sales').then(r => r.json()).then(fig => {
+  fetch('/plotly-sales').then r => r.json()).then(fig => {
     Plotly.newPlot('plotly-chart', fig.data, fig.layout);
   });
   // Matplotlib
