@@ -9,6 +9,15 @@ class SalesRecord(BaseModel):
     quantity: int = Field(..., ge=0)
     unit_price: float = Field(..., ge=0)
     total: float = Field(..., ge=0)
+    date: str
+    customer_id: int | None = None
+    status: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+    notes: str | None = None
+    user_id: int | None = None
+    category: str | None = None
+    payment_method: str | None = None
 
 class SalesResponse(BaseModel):
     rows: int

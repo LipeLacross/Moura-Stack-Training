@@ -141,36 +141,41 @@
       <table class="min-w-full divide-y divide-gray-200" id="sales-table">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="date">
-              Data
-              <span class="sort-indicator">↓</span>
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="product">
-              Produto
-              <span class="sort-indicator"></span>
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="quantity">
-              Quantidade
-              <span class="sort-indicator"></span>
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="price">
-              Preço Unit.
-              <span class="sort-indicator"></span>
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sortable" data-sort="total">
-              Total
-              <span class="sort-indicator"></span>
-            </th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">order_id</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">region</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">product</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">quantity</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">unit_price</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">total</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">date</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">customer_id</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">status</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">created_at</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">updated_at</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">notes</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">user_id</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">category</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">payment_method</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200" id="sales-table-body">
           {% for sale in sales %}
           <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.date }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.product }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.quantity }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ {{ "%.2f"|format(sale.unit_price) }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">R$ {{ "%.2f"|format(sale.total) }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.order_id }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.region }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.product }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.quantity }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">R$ {{ "%.2f"|format(sale.unit_price) }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">R$ {{ "%.2f"|format(sale.total) }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.date }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.customer_id }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.status }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.created_at }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.updated_at }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.notes }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.user_id }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.category }}</td>
+            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.payment_method }}</td>
           </tr>
           {% endfor %}
         </tbody>

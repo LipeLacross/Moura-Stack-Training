@@ -45,7 +45,8 @@ def load_sales_df(use_cache: bool = True, start_date: str = None, end_date: str 
     source = os.getenv("ETL_SOURCE", "csv")
     if source == "postgres":
         query = """
-            SELECT order_id, region, product, quantity, unit_price, COALESCE(total, quantity*unit_price) AS total, date
+            SELECT order_id, region, product, quantity, unit_price, COALESCE(total, quantity*unit_price) AS total, date,
+                   customer_id, status, created_at, updated_at, notes, user_id, category, payment_method
             FROM sales
             WHERE 1=1
         """
