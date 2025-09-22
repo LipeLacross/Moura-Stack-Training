@@ -89,6 +89,13 @@ def load_sales_df(use_cache: bool = True, start_date: str = None, end_date: str 
     _CACHED_DATA = df.copy()
     _LAST_UPDATE = datetime.now()
     
+    # Sanitiza o parâmetro 'product' para garantir que qualquer variação seja tratada corretamente
+    if product:
+        product_sanitized = str(product).strip().lower()
+        if product_sanitized in ['todos os produtos', 'todos', 'all', 'all products', '']:
+            product = None
+    logging.info(f"[DEBUG] Valor final do filtro de produto: {product}")  # TODO(copilot, 2025-09-22, debug filtro): Remover após validação
+
     return df
 
 def compute_summary(df: pd.DataFrame) -> Dict[str, Any]:
