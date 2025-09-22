@@ -375,7 +375,6 @@ services:
   <h2 class="text-xl font-semibold mb-4 text-primary">Big Data — Receita Total por Produto (PySpark) <span title="PySpark: biblioteca para processamento distribuído de dados em larga escala." style="cursor:help;">ℹ️</span><br><span class="text-xs text-gray-500 font-normal">Imagem gerada com <b>PySpark</b> para processamento distribuído e <b>matplotlib</b> para visualização. <b>Java</b> é obrigatório para execução do PySpark.</span></h2>
   <p class="text-xs text-gray-600 mb-2">Gráfico mostra a receita total agregada por produto, processada em larga escala com PySpark.</p>
   <img src="/public/pyspark_agg.png" alt="PySpark Aggregates" class="w-full h-64 object-contain" />
-  <div class="text-xs text-yellow-700 mt-2">Se a imagem não aparecer, verifique se o Java está instalado e a variável <code>JAVA_HOME</code> está configurada.</div>
 </div>
 
 <!-- Gráficos Interativos -->
@@ -435,6 +434,17 @@ async function fetchMetricsAndSales(page = 1) {
   document.querySelector('#revenue-kpi .text-primary').textContent = `R$ ${Number(summary.total_revenue).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
   document.querySelector('#quantity-kpi .text-primary').textContent = summary.total_quantity;
   document.querySelector('#avg-ticket-kpi .text-primary').textContent = `R$ ${Number(summary.avg_ticket).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+  // Preview de vendas
+  const previewRes = await fetch(`/metrics/sales?start_date=${startDate}&end_date=${endDate}&product=${product}&limit=20`);
+  const previewData = await previewRes.json();
+  const previewElem = document.getElementById('sales-preview');
+  if (!previewData.preview || previewData.preview.length === 0) {
+    previewElem.textContent = 'Nenhum dado encontrado para os filtros selecionados.';
+  } else {
+    previewElem.textContent = previewData.preview.map(sale =>
+      `#${sale.order_id} | ${sale.region} | ${sale.product} | ${sale.quantity} | R$ ${Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2})} | R$ ${Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})} | ${sale.date} | ${sale.status}`
+    ).join('\n');
+  }
   // Tabela de vendas
   let salesUrl = `/metrics/sales?start_date=${startDate}&end_date=${endDate}&product=${product}&limit=${pageSize}&offset=${offset}`;
   if (filtersQuery) salesUrl += `&${filtersQuery}`;
@@ -443,25 +453,30 @@ async function fetchMetricsAndSales(page = 1) {
   totalRows = salesData.rows || 0;
   const tbody = document.getElementById('sales-table-body');
   tbody.innerHTML = '';
-  salesData.preview.forEach(sale => {
+  if (!salesData.preview || salesData.preview.length === 0) {
     const tr = document.createElement('tr');
-    tr.className = 'hover:bg-gray-50';
-    tr.innerHTML = `
-      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.date || ''}</td>
-      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.product}</td>
-      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.quantity}</td>
-      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">R$ ${Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-      <td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900\">R$ ${Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-    `;
+    tr.innerHTML = `<td colspan="5" class="text-center text-gray-500 py-6">Nenhum dado encontrado para os filtros selecionados.</td>`;
     tbody.appendChild(tr);
-  });
+  } else {
+    salesData.preview.forEach(sale => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-gray-50';
+      tr.innerHTML = `
+        <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.date || ''}</td>
+        <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.product}</td>
+        <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.quantity}</td>
+        <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">R$ ${Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+        <td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900\">R$ ${Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
   // Atualiza paginação
   const startItem = (offset + 1);
   const endItem = Math.min(offset + pageSize, totalRows);
   document.getElementById('start-item').textContent = startItem;
   document.getElementById('end-item').textContent = endItem;
   document.getElementById('total-items').textContent = totalRows;
-  // Atualiza botões
   document.getElementById('prev-page').disabled = page <= 1;
   document.getElementById('next-page').disabled = endItem >= totalRows;
   document.getElementById('prev-page-mobile').disabled = page <= 1;
@@ -475,28 +490,43 @@ async function fetchMetricsAndSales(page = 1) {
   });
   const revenueLabels = Object.keys(revenueByDate);
   const revenueValues = Object.values(revenueByDate);
+  const revenueChartContainer = document.getElementById('revenueChart').parentElement;
   if (window.revenueChartInstance) window.revenueChartInstance.destroy();
-  const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-  window.revenueChartInstance = new Chart(revenueCtx, {
-    type: 'line',
-    data: {
-      labels: revenueLabels,
-      datasets: [{
-        label: 'Receita',
-        data: revenueValues,
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: true } },
-      scales: { y: { beginAtZero: true } }
+  if (revenueLabels.length === 0) {
+    revenueChartContainer.querySelector('canvas').style.display = 'none';
+    if (!revenueChartContainer.querySelector('.no-data')) {
+      const msg = document.createElement('div');
+      msg.className = 'no-data text-center text-gray-500 py-6';
+      msg.textContent = 'Nenhum dado para o gráfico de receita por período.';
+      revenueChartContainer.appendChild(msg);
     }
-  });
+  } else {
+    revenueChartContainer.querySelector('canvas').style.display = '';
+    if (revenueChartContainer.querySelector('.no-data')) {
+      revenueChartContainer.querySelector('.no-data').remove();
+    }
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    window.revenueChartInstance = new Chart(revenueCtx, {
+      type: 'line',
+      data: {
+        labels: revenueLabels,
+        datasets: [{
+          label: 'Receita',
+          data: revenueValues,
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: true } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
   // D3: Distribuição por Categoria
   const categoryAgg = {};
   salesData.preview.forEach(sale => {
@@ -505,21 +535,28 @@ async function fetchMetricsAndSales(page = 1) {
   });
   const d3Container = document.getElementById('d3-category-chart');
   d3Container.innerHTML = '';
-  const width = d3Container.offsetWidth || 400;
-  const height = 250;
-  const svg = d3.select(d3Container).append('svg').attr('width', width).attr('height', height);
   const data = Object.entries(categoryAgg).map(([product, total]) => ({product, total}));
-  const x = d3.scaleBand().domain(data.map(d => d.product)).range([40, width-20]).padding(0.2);
-  const y = d3.scaleLinear().domain([0, d3.max(data, d => d.total)]).range([height-40, 20]);
-  svg.append('g').attr('transform', `translate(0,${height-40})`).call(d3.axisBottom(x));
-  svg.append('g').attr('transform', 'translate(40,0)').call(d3.axisLeft(y));
-  svg.selectAll('.bar').data(data).enter().append('rect')
-    .attr('class', 'bar')
-    .attr('x', d => x(d.product))
-    .attr('y', d => y(d.total))
-    .attr('width', x.bandwidth())
-    .attr('height', d => height-40 - y(d.total))
-    .attr('fill', 'steelblue');
+  if (data.length === 0) {
+    const msg = document.createElement('div');
+    msg.className = 'no-data text-center text-gray-500 py-6';
+    msg.textContent = 'Nenhum dado para o gráfico de distribuição por categoria.';
+    d3Container.appendChild(msg);
+  } else {
+    const width = d3Container.offsetWidth || 400;
+    const height = 250;
+    const svg = d3.select(d3Container).append('svg').attr('width', width).attr('height', height);
+    const x = d3.scaleBand().domain(data.map(d => d.product)).range([40, width-20]).padding(0.2);
+    const y = d3.scaleLinear().domain([0, d3.max(data, d => d.total)]).range([height-40, 20]);
+    svg.append('g').attr('transform', `translate(0,${height-40})`).call(d3.axisBottom(x));
+    svg.append('g').attr('transform', 'translate(40,0)').call(d3.axisLeft(y));
+    svg.selectAll('.bar').data(data).enter().append('rect')
+      .attr('class', 'bar')
+      .attr('x', d => x(d.product))
+      .attr('y', d => y(d.total))
+      .attr('width', x.bandwidth())
+      .attr('height', d => height-40 - y(d.total))
+      .attr('fill', 'steelblue');
+  }
 }
 function applyColumnFilters() {
   currentPage = 1;
