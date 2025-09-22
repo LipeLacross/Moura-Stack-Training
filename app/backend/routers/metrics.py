@@ -18,6 +18,16 @@ def sales(
     if "order_id" in df.columns:
         df = df.sort_values("order_id")
     prev = df.head(limit).to_dict(orient="records")
+    # Conversão robusta de campos de data/hora para string
+    for r in prev:
+        for field in ["date", "created_at", "updated_at"]:
+            val = r.get(field)
+            if val is None or (hasattr(val, 'isnull') and val.isnull()):
+                r[field] = None
+            elif hasattr(val, 'isoformat'):
+                r[field] = val.isoformat()
+            else:
+                r[field] = str(val) if val else None
     # garantir tipos coerentes com SalesRecord
     preview: List[SalesRecord] = [SalesRecord(**r) for r in prev]  # type: ignore[arg-type]
     return SalesResponse(rows=len(df), preview=preview)

@@ -159,25 +159,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200" id="sales-table-body">
-          {% for sale in sales %}
-          <tr class="hover:bg-gray-50">
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.order_id }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.region }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.product }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.quantity }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">R$ {{ "%.2f"|format(sale.unit_price) }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">R$ {{ "%.2f"|format(sale.total) }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.date }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.customer_id }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.status }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.created_at }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.updated_at }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.notes }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.user_id }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.category }}</td>
-            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ sale.payment_method }}</td>
-          </tr>
-          {% endfor %}
+          <!-- Preenchido dinamicamente via JS -->
         </tbody>
       </table>
     </div>
