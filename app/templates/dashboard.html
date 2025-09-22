@@ -121,28 +121,11 @@
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold text-primary">Vendas<span title="Tabela mostra vendas recentes, permite busca e ordenação." style="cursor:help;">ℹ️</span></h2>
     </div>
-    <p class="text-xs text-gray-600 mb-2">Tabela detalhada das vendas. Utilize os campos de busca e filtro para encontrar registros específicos.</p>
-
-    <!-- Filtros de colunas -->
-    <div class="mb-4 grid grid-cols-6 gap-2">
-      <input type="text" id="filter-order_id" placeholder="order_id" class="p-2 border rounded text-xs" />
-      <input type="text" id="filter-region" placeholder="region" class="p-2 border rounded text-xs" />
-      <input type="text" id="filter-product" placeholder="product" class="p-2 border rounded text-xs" />
-      <input type="text" id="filter-quantity" placeholder="quantity" class="p-2 border rounded text-xs" />
-      <input type="text" id="filter-unit_price" placeholder="unit_price" class="p-2 border rounded text-xs" />
-      <input type="text" id="filter-total" placeholder="total" class="p-2 border rounded text-xs" />
-    </div>
 
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200" id="sales-table">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID do Pedido</th>
-            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Região</th>
-            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
-            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
-            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço Unitário</th>
-            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Cliente</th>
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -391,20 +374,6 @@ services:
 let currentPage = 1;
 let totalRows = 0;
 const pageSize = 20;
-let columnFilters = {
-  order_id: '',
-  region: '',
-  product: '',
-  quantity: '',
-  unit_price: '',
-  total: ''
-};
-function getColumnFiltersQuery() {
-  return Object.entries(columnFilters)
-    .filter(([_, v]) => v)
-    .map(([k, v]) => `filter_${k}=${encodeURIComponent(v)}`)
-    .join('&');
-}
 function formatDateInput(dateStr) {
   // Aceita 'dd/mm/yyyy' ou 'yyyy-mm-dd' e retorna 'yyyy-mm-dd'
   if (!dateStr) return '';
@@ -421,7 +390,6 @@ async function fetchMetricsAndSales(page = 1) {
   const endDate = formatDateInput(endDateRaw);
   const product = document.getElementById('product-filter').value;
   const offset = (page - 1) * pageSize;
-  const filtersQuery = getColumnFiltersQuery();
   // KPIs
   const summaryRes = await fetch(`/metrics/summary?start_date=${startDate}&end_date=${endDate}&product=${product}`);
   const summary = await summaryRes.json();
@@ -430,7 +398,6 @@ async function fetchMetricsAndSales(page = 1) {
   document.querySelector('#avg-ticket-kpi .text-primary').textContent = `R$ ${Number(summary.avg_ticket).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
   // Tabela de vendas
   let salesUrl = `/metrics/sales?start_date=${startDate}&end_date=${endDate}&product=${product}&limit=${pageSize}&offset=${offset}`;
-  if (filtersQuery) salesUrl += `&${filtersQuery}`;
   const salesRes = await fetch(salesUrl);
   const salesData = await salesRes.json();
   totalRows = salesData.rows || 0;
@@ -445,12 +412,6 @@ async function fetchMetricsAndSales(page = 1) {
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-gray-50';
       tr.innerHTML = `
-        <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">${sale.order_id ?? ''}</td>
-        <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">${sale.region ?? ''}</td>
-        <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">${sale.product ?? ''}</td>
-        <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">${sale.quantity ?? ''}</td>
-        <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">R$ ${sale.unit_price !== undefined ? Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : ''}</td>
-        <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">R$ ${sale.total !== undefined ? Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : ''}</td>
         <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">${sale.date ?? ''}</td>
         <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">${sale.customer_id ?? ''}</td>
         <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">${sale.status ?? ''}</td>
@@ -477,7 +438,6 @@ async function fetchMetricsAndSales(page = 1) {
   // Chart.js: Receita por Período
   const revenueByDate = {};
   salesData.preview.forEach(sale => {
-    // Garante que sale.date e sale.total existem
     if (sale.date && sale.total !== undefined && sale.total !== null) {
       if (!revenueByDate[sale.date]) revenueByDate[sale.date] = 0;
       revenueByDate[sale.date] += Number(sale.total);
@@ -525,7 +485,6 @@ async function fetchMetricsAndSales(page = 1) {
   // D3: Distribuição por Categoria
   const categoryAgg = {};
   salesData.preview.forEach(sale => {
-    // Garante que sale.product e sale.total existem
     if (sale.product && sale.total !== undefined && sale.total !== null) {
       if (!categoryAgg[sale.product]) categoryAgg[sale.product] = 0;
       categoryAgg[sale.product] += Number(sale.total);
@@ -556,10 +515,6 @@ async function fetchMetricsAndSales(page = 1) {
       .attr('fill', 'steelblue');
   }
 }
-function applyColumnFilters() {
-  currentPage = 1;
-  fetchMetricsAndSales(currentPage);
-}
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('apply-filters').addEventListener('click', () => {
     currentPage = 1;
@@ -588,13 +543,6 @@ window.addEventListener('DOMContentLoaded', () => {
       currentPage++;
       fetchMetricsAndSales(currentPage);
     }
-  });
-  // Filtros de coluna
-  ['order_id','region','product','quantity','unit_price','total'].forEach(col => {
-    document.getElementById(`filter-${col}`).addEventListener('input', e => {
-      columnFilters[col] = e.target.value;
-      applyColumnFilters();
-    });
   });
   fetchMetricsAndSales(currentPage);
 });
