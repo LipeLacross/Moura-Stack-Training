@@ -36,11 +36,13 @@ def load_sales_df(use_cache: bool = True, start_date: str = None, end_date: str 
     global _CACHED_DATA, _LAST_UPDATE
     
     # Verifica se pode usar o cache
+    # Só usa cache se NÃO houver filtros
     if use_cache and _CACHED_DATA is not None and _LAST_UPDATE is not None:
         cache_age = datetime.now() - _LAST_UPDATE
         if cache_age < timedelta(minutes=CACHE_TTL_MINUTES):
-            return _CACHED_DATA.copy()
-    
+            if not start_date and not end_date and (not product or product.lower() == 'todos os produtos'):
+                return _CACHED_DATA.copy()
+
     # Carrega os dados da fonte
     source = os.getenv("ETL_SOURCE", "csv")
     if source == "postgres":
