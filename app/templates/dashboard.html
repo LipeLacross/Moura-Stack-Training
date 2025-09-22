@@ -294,6 +294,10 @@
     <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
       <div class="flex items-center gap-2"><span class="text-2xl">🔥</span><span class="font-bold">PySpark</span></div>
       <div class="text-sm text-kpi">Job para processamento em larga escala.</div>
+      <div class="text-xs text-red-600 mt-2">
+        <b>Atenção:</b> Para rodar jobs PySpark no Windows é obrigatório ter <b>Java</b>, <b>HADOOP_HOME</b> e o arquivo <b>winutils.exe</b> em <code>C:\hadoop\bin</code>.<br>
+        O suporte oficial do PySpark é apenas para <b>Linux</b>. Em Windows, podem ocorrer erros de ambiente e permissões.
+      </div>
     </div>
     <div class="bg-card border border-border rounded-lg p-6 shadow flex flex-col gap-2">
       <div class="flex items-center gap-2"><span class="text-2xl">📊</span><span class="font-bold">Export Excel</span></div>

@@ -57,7 +57,6 @@ Projeto desenvolvido para demonstrar competências técnicas (Moura) em **APIs (
 * **app/services/**
 
   * `data.py`: carregamento/transformações, métricas e modelos ML.
-  * `etl.py`, `metrics.py`, `ml.py`, `stats.py`: serviços especializados.
 * **app/templates/**
 
   * `base.html`: layout base.
