@@ -395,8 +395,8 @@ async function fetchMetricsAndSales(page = 1) {
   const startDate = formatDateInput(startDateRaw);
   const endDate = formatDateInput(endDateRaw);
   let product = document.getElementById('product-filter').value;
+  console.log('[DEBUG] Produto selecionado:', product); // TODO(copilot, 2025-09-22, debug filtro): Remover após validação
   const offset = (page - 1) * pageSize;
-  // Se for 'Todos os Produtos', envia vazio
   if (!product) product = '';
   // KPIs
   const summaryRes = await fetch(`/metrics/summary?start_date=${startDate}&end_date=${endDate}&product=${product}`);
@@ -408,6 +408,7 @@ async function fetchMetricsAndSales(page = 1) {
   let salesUrl = `/metrics/sales?start_date=${startDate}&end_date=${endDate}`;
   if (product) salesUrl += `&product=${encodeURIComponent(product)}`;
   salesUrl += `&limit=${pageSize}&offset=${offset}`;
+  console.log('[DEBUG] URL de vendas:', salesUrl); // TODO(copilot, 2025-09-22, debug filtro): Remover após validação
   const salesRes = await fetch(salesUrl);
   const salesData = await salesRes.json();
   totalRows = salesData.rows || 0;
@@ -520,7 +521,16 @@ async function fetchMetricsAndSales(page = 1) {
     const svg = d3.select(d3Container).append('svg').attr('width', width).attr('height', height);
     const x = d3.scaleBand().domain(data.map(d => d.product)).range([40, width-20]).padding(0.2);
     const y = d3.scaleLinear().domain([0, d3.max(data, d => d.total)]).range([height-40, 20]);
-    svg.append('g').attr('transform', `translate(0,${height-40})`).call(d3.axisBottom(x));
+    // Eixo X com rotação dos labels para evitar sobreposição
+    svg.append('g')
+      .attr('transform', `translate(0,${height-40})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-0.8em')
+      .attr('dy', '0.15em')
+      .style('font-size', '12px');
     svg.append('g').attr('transform', 'translate(40,0)').call(d3.axisLeft(y));
     svg.selectAll('.bar').data(data).enter().append('rect')
       .attr('class', 'bar')
