@@ -422,9 +422,20 @@ function getColumnFiltersQuery() {
     .map(([k, v]) => `filter_${k}=${encodeURIComponent(v)}`)
     .join('&');
 }
+function formatDateInput(dateStr) {
+  // Aceita 'dd/mm/yyyy' ou 'yyyy-mm-dd' e retorna 'yyyy-mm-dd'
+  if (!dateStr) return '';
+  if (dateStr.includes('/')) {
+    const [d, m, y] = dateStr.split('/');
+    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  return dateStr;
+}
 async function fetchMetricsAndSales(page = 1) {
-  const startDate = document.getElementById('start-date').value;
-  const endDate = document.getElementById('end-date').value;
+  const startDateRaw = document.getElementById('start-date').value;
+  const endDateRaw = document.getElementById('end-date').value;
+  const startDate = formatDateInput(startDateRaw);
+  const endDate = formatDateInput(endDateRaw);
   const product = document.getElementById('product-filter').value;
   const offset = (page - 1) * pageSize;
   const filtersQuery = getColumnFiltersQuery();
@@ -442,7 +453,7 @@ async function fetchMetricsAndSales(page = 1) {
     previewElem.textContent = 'Nenhum dado encontrado para os filtros selecionados.';
   } else {
     previewElem.textContent = previewData.preview.map(sale =>
-      `#${sale.order_id} | ${sale.region} | ${sale.product} | ${sale.quantity} | R$ ${Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2})} | R$ ${Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})} | ${sale.date} | ${sale.status}`
+      `#${sale.order_id} | ${sale.region} | ${sale.product} | ${sale.quantity} | R$ ${Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2})} | R$ ${Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
     ).join('\n');
   }
   // Tabela de vendas
@@ -484,9 +495,11 @@ async function fetchMetricsAndSales(page = 1) {
   // Chart.js: Receita por Período
   const revenueByDate = {};
   salesData.preview.forEach(sale => {
-    if (!sale.date) return;
-    if (!revenueByDate[sale.date]) revenueByDate[sale.date] = 0;
-    revenueByDate[sale.date] += sale.total;
+    // Garante que sale.date e sale.total existem
+    if (sale.date && sale.total !== undefined && sale.total !== null) {
+      if (!revenueByDate[sale.date]) revenueByDate[sale.date] = 0;
+      revenueByDate[sale.date] += Number(sale.total);
+    }
   });
   const revenueLabels = Object.keys(revenueByDate);
   const revenueValues = Object.values(revenueByDate);
@@ -530,8 +543,11 @@ async function fetchMetricsAndSales(page = 1) {
   // D3: Distribuição por Categoria
   const categoryAgg = {};
   salesData.preview.forEach(sale => {
-    if (!categoryAgg[sale.product]) categoryAgg[sale.product] = 0;
-    categoryAgg[sale.product] += sale.total;
+    // Garante que sale.product e sale.total existem
+    if (sale.product && sale.total !== undefined && sale.total !== null) {
+      if (!categoryAgg[sale.product]) categoryAgg[sale.product] = 0;
+      categoryAgg[sale.product] += Number(sale.total);
+    }
   });
   const d3Container = document.getElementById('d3-category-chart');
   d3Container.innerHTML = '';
