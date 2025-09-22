@@ -100,9 +100,9 @@
 <!-- Preview de vendas -->
 <div class="mb-8">
   <h2 class="text-xl font-semibold mb-4 text-primary">Preview de Vendas (API) <span title="API REST permite acessar dados via endpoints, como /metrics/sales." style="cursor:help;">ℹ️</span></h2>
-  <p class="text-xs text-gray-600 mb-2">Exibe uma amostra dos dados retornados pelo endpoint <code>/metrics/sales</code>.</p>
+  <p class="text-xs text-gray-600 mb-2">Os dados exibidos abaixo são provenientes de um <b>banco de dados PostgreSQL</b> hospedado na <b>Lacrosstech</b>. Para visualizar, buscar e filtrar vendas, utilize a tabela detalhada abaixo.</p>
   <div class="bg-card rounded-lg p-4 mb-4">
-    <pre class="text-xs text-kpi" id="sales-preview"></pre>
+    <div class="text-xs text-kpi">A tabela detalhada de vendas permite navegação, busca e filtros avançados diretamente nos dados reais do banco.</div>
     <div class="text-xs text-gray-400 mt-2">Endpoint: <a href="/metrics/sales" class="text-primary underline">/metrics/sales</a></div>
   </div>
 </div>
@@ -123,7 +123,7 @@
 <div class="bg-card border border-border rounded-lg shadow overflow-hidden mb-8">
   <div class="p-6">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-primary">Últimas Vendas <span title="Tabela mostra vendas recentes, permite busca e ordenação." style="cursor:help;">ℹ️</span></h2>
+      <h2 class="text-xl font-semibold text-primary">Vendas<span title="Tabela mostra vendas recentes, permite busca e ordenação." style="cursor:help;">ℹ️</span></h2>
     </div>
     <p class="text-xs text-gray-600 mb-2">Tabela detalhada das vendas. Utilize os campos de busca e filtro para encontrar registros específicos.</p>
 
@@ -445,17 +445,6 @@ async function fetchMetricsAndSales(page = 1) {
   document.querySelector('#revenue-kpi .text-primary').textContent = `R$ ${Number(summary.total_revenue).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
   document.querySelector('#quantity-kpi .text-primary').textContent = summary.total_quantity;
   document.querySelector('#avg-ticket-kpi .text-primary').textContent = `R$ ${Number(summary.avg_ticket).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-  // Preview de vendas
-  const previewRes = await fetch(`/metrics/sales?start_date=${startDate}&end_date=${endDate}&product=${product}&limit=20`);
-  const previewData = await previewRes.json();
-  const previewElem = document.getElementById('sales-preview');
-  if (!previewData.preview || previewData.preview.length === 0) {
-    previewElem.textContent = 'Nenhum dado encontrado para os filtros selecionados.';
-  } else {
-    previewElem.textContent = previewData.preview.map(sale =>
-      `#${sale.order_id} | ${sale.region} | ${sale.product} | ${sale.quantity} | R$ ${Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2})} | R$ ${Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
-    ).join('\n');
-  }
   // Tabela de vendas
   let salesUrl = `/metrics/sales?start_date=${startDate}&end_date=${endDate}&product=${product}&limit=${pageSize}&offset=${offset}`;
   if (filtersQuery) salesUrl += `&${filtersQuery}`;
