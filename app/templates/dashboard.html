@@ -107,24 +107,15 @@
   </div>
 </div>
 
-<!-- Gráficos -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-  <div class="bg-card border border-border rounded-lg p-6 shadow">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-primary">Receita por Período <span title="Gráfico gerado com matplotlib, biblioteca Python para visualização de dados." style="cursor:help;">ℹ️</span></h2>
-    </div>
-    <p class="text-xs text-gray-600 mb-2">Gráfico gerado com <b>matplotlib</b> mostrando a evolução da receita ao longo do tempo.</p>
-    <div class="h-80">
-      <canvas id="revenueChart"></canvas>
-    </div>
+<!-- Gráficos dinâmicos -->
+<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="chart-container bg-white rounded-lg shadow p-4">
+    <h3 class="text-lg font-semibold mb-2 text-primary">Receita por Período <span title="Gráfico gerado com Chart.js mostrando a evolução da receita ao longo do tempo." style="cursor:help;">ℹ️</span></h3>
+    <canvas id="revenueChart" class="w-full h-64"></canvas>
   </div>
-
-  <div class="bg-card border border-border rounded-lg p-6 shadow">
-    <h2 class="text-xl font-semibold mb-4 text-primary">Distribuição por Categoria <span title="Categoria agrupa produtos para análise de vendas." style="cursor:help;">ℹ️</span></h2>
-    <p class="text-xs text-gray-600 mb-2">Gráfico gerado com <b>matplotlib</b> mostrando a distribuição das vendas por categoria de produto.</p>
-    <div class="h-80">
-      <canvas id="categoryChart"></canvas>
-    </div>
+  <div class="chart-container bg-white rounded-lg shadow p-4">
+    <h3 class="text-lg font-semibold mb-2 text-primary">Distribuição por Categoria <span title="Gráfico gerado com D3 mostrando a distribuição das vendas por categoria de produto." style="cursor:help;">ℹ️</span></h3>
+    <div id="d3-category-chart" class="w-full h-64"></div>
   </div>
 </div>
 
@@ -413,64 +404,164 @@ services:
   <img src="/public/statistics.png" alt="Análises Estatísticas" class="w-full h-64 object-contain" />
 </div>
 
-<!-- Scripts para gráficos interativos Chart.js -->
+<!-- Scripts para gráficos dinâmicos Chart.js e D3 -->
 <script>
-// Dados simulados para Receita por Período
-const revenueData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-  datasets: [{
-    label: 'Receita',
-    data: [12000, 15000, 18000, 14000, 17000, 16000],
-    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-    borderColor: 'rgba(54, 162, 235, 1)',
-    borderWidth: 2,
-    fill: true,
-    tension: 0.3
-  }]
+let currentPage = 1;
+let totalRows = 0;
+const pageSize = 20;
+let columnFilters = {
+  order_id: '',
+  region: '',
+  product: '',
+  quantity: '',
+  unit_price: '',
+  total: ''
 };
-const revenueConfig = {
-  type: 'line',
-  data: revenueData,
-  options: {
-    responsive: true,
-    plugins: { legend: { display: true } },
-    scales: { y: { beginAtZero: true } }
-  }
-};
-const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-new Chart(revenueCtx, revenueConfig);
-
-// Dados simulados para Distribuição por Categoria
-const categoryData = {
-  labels: ['Produto A', 'Produto B', 'Produto C', 'Produto D'],
-  datasets: [{
-    label: 'Vendas',
-    data: [40, 25, 20, 15],
-    backgroundColor: [
-      'rgba(255, 99, 132, 0.6)',
-      'rgba(54, 162, 235, 0.6)',
-      'rgba(255, 206, 86, 0.6)',
-      'rgba(75, 192, 192, 0.6)'
-    ],
-    borderColor: [
-      'rgba(255, 99, 132, 1)',
-      'rgba(54, 162, 235, 1)',
-      'rgba(255, 206, 86, 1)',
-      'rgba(75, 192, 192, 1)'
-    ],
-    borderWidth: 1
-  }]
-};
-const categoryConfig = {
-  type: 'bar',
-  data: categoryData,
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true } }
-  }
-};
-const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-new Chart(categoryCtx, categoryConfig);
+function getColumnFiltersQuery() {
+  return Object.entries(columnFilters)
+    .filter(([_, v]) => v)
+    .map(([k, v]) => `filter_${k}=${encodeURIComponent(v)}`)
+    .join('&');
+}
+async function fetchMetricsAndSales(page = 1) {
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+  const product = document.getElementById('product-filter').value;
+  const offset = (page - 1) * pageSize;
+  const filtersQuery = getColumnFiltersQuery();
+  // KPIs
+  const summaryRes = await fetch(`/metrics/summary?start_date=${startDate}&end_date=${endDate}&product=${product}`);
+  const summary = await summaryRes.json();
+  document.querySelector('#revenue-kpi .text-primary').textContent = `R$ ${Number(summary.total_revenue).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+  document.querySelector('#quantity-kpi .text-primary').textContent = summary.total_quantity;
+  document.querySelector('#avg-ticket-kpi .text-primary').textContent = `R$ ${Number(summary.avg_ticket).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+  // Tabela de vendas
+  let salesUrl = `/metrics/sales?start_date=${startDate}&end_date=${endDate}&product=${product}&limit=${pageSize}&offset=${offset}`;
+  if (filtersQuery) salesUrl += `&${filtersQuery}`;
+  const salesRes = await fetch(salesUrl);
+  const salesData = await salesRes.json();
+  totalRows = salesData.rows || 0;
+  const tbody = document.getElementById('sales-table-body');
+  tbody.innerHTML = '';
+  salesData.preview.forEach(sale => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-gray-50';
+    tr.innerHTML = `
+      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.date || ''}</td>
+      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.product}</td>
+      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">${sale.quantity}</td>
+      <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-900\">R$ ${Number(sale.unit_price).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+      <td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900\">R$ ${Number(sale.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  // Atualiza paginação
+  const startItem = (offset + 1);
+  const endItem = Math.min(offset + pageSize, totalRows);
+  document.getElementById('start-item').textContent = startItem;
+  document.getElementById('end-item').textContent = endItem;
+  document.getElementById('total-items').textContent = totalRows;
+  // Atualiza botões
+  document.getElementById('prev-page').disabled = page <= 1;
+  document.getElementById('next-page').disabled = endItem >= totalRows;
+  document.getElementById('prev-page-mobile').disabled = page <= 1;
+  document.getElementById('next-page-mobile').disabled = endItem >= totalRows;
+  // Chart.js: Receita por Período
+  const revenueByDate = {};
+  salesData.preview.forEach(sale => {
+    if (!sale.date) return;
+    if (!revenueByDate[sale.date]) revenueByDate[sale.date] = 0;
+    revenueByDate[sale.date] += sale.total;
+  });
+  const revenueLabels = Object.keys(revenueByDate);
+  const revenueValues = Object.values(revenueByDate);
+  if (window.revenueChartInstance) window.revenueChartInstance.destroy();
+  const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+  window.revenueChartInstance = new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+      labels: revenueLabels,
+      datasets: [{
+        label: 'Receita',
+        data: revenueValues,
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: true } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+  // D3: Distribuição por Categoria
+  const categoryAgg = {};
+  salesData.preview.forEach(sale => {
+    if (!categoryAgg[sale.product]) categoryAgg[sale.product] = 0;
+    categoryAgg[sale.product] += sale.total;
+  });
+  const d3Container = document.getElementById('d3-category-chart');
+  d3Container.innerHTML = '';
+  const width = d3Container.offsetWidth || 400;
+  const height = 250;
+  const svg = d3.select(d3Container).append('svg').attr('width', width).attr('height', height);
+  const data = Object.entries(categoryAgg).map(([product, total]) => ({product, total}));
+  const x = d3.scaleBand().domain(data.map(d => d.product)).range([40, width-20]).padding(0.2);
+  const y = d3.scaleLinear().domain([0, d3.max(data, d => d.total)]).range([height-40, 20]);
+  svg.append('g').attr('transform', `translate(0,${height-40})`).call(d3.axisBottom(x));
+  svg.append('g').attr('transform', 'translate(40,0)').call(d3.axisLeft(y));
+  svg.selectAll('.bar').data(data).enter().append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => x(d.product))
+    .attr('y', d => y(d.total))
+    .attr('width', x.bandwidth())
+    .attr('height', d => height-40 - y(d.total))
+    .attr('fill', 'steelblue');
+}
+function applyColumnFilters() {
+  currentPage = 1;
+  fetchMetricsAndSales(currentPage);
+}
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('apply-filters').addEventListener('click', () => {
+    currentPage = 1;
+    fetchMetricsAndSales(currentPage);
+  });
+  document.getElementById('prev-page').addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      fetchMetricsAndSales(currentPage);
+    }
+  });
+  document.getElementById('next-page').addEventListener('click', () => {
+    if ((currentPage * pageSize) < totalRows) {
+      currentPage++;
+      fetchMetricsAndSales(currentPage);
+    }
+  });
+  document.getElementById('prev-page-mobile').addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      fetchMetricsAndSales(currentPage);
+    }
+  });
+  document.getElementById('next-page-mobile').addEventListener('click', () => {
+    if ((currentPage * pageSize) < totalRows) {
+      currentPage++;
+      fetchMetricsAndSales(currentPage);
+    }
+  });
+  // Filtros de coluna
+  ['order_id','region','product','quantity','unit_price','total'].forEach(col => {
+    document.getElementById(`filter-${col}`).addEventListener('input', e => {
+      columnFilters[col] = e.target.value;
+      applyColumnFilters();
+    });
+  });
+  fetchMetricsAndSales(currentPage);
+});
 </script>
 {% endblock %}

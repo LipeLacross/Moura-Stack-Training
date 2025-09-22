@@ -66,8 +66,8 @@ async def dashboard(request: Request):
     summary = compute_summary(df)
     
     # Prepara dados para o preview da API
-    sales_preview = sales_data[:5]  # Apenas as primeiras 5 entradas para o preview
-    
+    sales_preview = sales_data[:20]  # Apenas as primeiras 20 entradas para o preview
+
     power_bi_url = os.getenv("POWER_BI_EMBED_URL", "")
     
     return templates.TemplateResponse(
