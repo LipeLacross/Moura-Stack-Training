@@ -411,6 +411,7 @@ async function fetchMetricsAndSales(page = 1) {
   console.log('[DEBUG] URL de vendas:', salesUrl); // TODO(copilot, 2025-09-22, debug filtro): Remover após validação
   const salesRes = await fetch(salesUrl);
   const salesData = await salesRes.json();
+  console.log('[DEBUG] Dados recebidos da API:', salesData.preview); // TODO(copilot, 2025-09-22, debug filtro): Remover após validação
   totalRows = salesData.rows || 0;
   const tbody = document.getElementById('sales-table-body');
   tbody.innerHTML = '';

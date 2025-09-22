@@ -1,5 +1,6 @@
 from __future__ import annotations
 from fastapi import APIRouter, Query
+import logging
 from typing import List
 import pandas as pd
 from app.backend.models import SalesRecord, SalesResponse, MetricSummary
@@ -16,6 +17,8 @@ def sales(
     product: str = Query(None, description="Produto")
 ) -> SalesResponse:  # type: ignore[override]
     df: pd.DataFrame = load_sales_df(start_date=start_date, end_date=end_date, product=product)
+    logging.info(f"[DEBUG] Parâmetro recebido: product={product}")  # TODO(copilot, 2025-09-22, debug filtro): Remover após validação
+    logging.info(f"[DEBUG] Linhas retornadas após filtro: {len(df)}")  # TODO(copilot, 2025-09-22, debug filtro): Remover após validação
     if "order_id" in df.columns:
         df = df.sort_values("order_id")
     prev = df.iloc[offset:offset+limit].to_dict(orient="records")
