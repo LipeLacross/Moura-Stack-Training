@@ -10,6 +10,7 @@ router = APIRouter(prefix="/metrics", tags=["metrics"])
 @router.get("/sales", response_model=SalesResponse)
 def sales(
     limit: int = Query(100, ge=1, le=10_000),
+    offset: int = Query(0, ge=0),
     start_date: str = Query(None, description="Data inicial (YYYY-MM-DD)"),
     end_date: str = Query(None, description="Data final (YYYY-MM-DD)"),
     product: str = Query(None, description="Produto")
@@ -17,7 +18,7 @@ def sales(
     df: pd.DataFrame = load_sales_df(start_date=start_date, end_date=end_date, product=product)
     if "order_id" in df.columns:
         df = df.sort_values("order_id")
-    prev = df.head(limit).to_dict(orient="records")
+    prev = df.iloc[offset:offset+limit].to_dict(orient="records")
     # Conversão robusta de campos de data/hora para string
     for r in prev:
         for field in ["date", "created_at", "updated_at"]:
