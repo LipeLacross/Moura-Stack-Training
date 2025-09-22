@@ -518,6 +518,11 @@ async function fetchMetricsAndSales(page = 1) {
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('apply-filters').addEventListener('click', () => {
     currentPage = 1;
+    // Garante que sempre envia o produto, mesmo com datas em branco
+    fetchMetricsAndSales(currentPage);
+  });
+  document.getElementById('product-filter').addEventListener('change', () => {
+    currentPage = 1;
     fetchMetricsAndSales(currentPage);
   });
   document.getElementById('prev-page').addEventListener('click', () => {
