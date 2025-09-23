@@ -236,6 +236,11 @@ def get_sales_data(
         end_date = end_date + timedelta(days=1)
         df = df[df["date"] <= end_date]
     
+    # Sanitiza o parâmetro 'product'
+    if product:
+        product_sanitized = str(product).strip().lower()
+        if product_sanitized in ['todos os produtos', 'todos', 'all', 'all products', '']:
+            product = None
     if product is not None:
         df = df[df["product"] == product]
     
@@ -304,6 +309,11 @@ def get_sales_by_period(
         end_date = end_date + timedelta(days=1)
         df = df[df["date"] <= end_date]
     
+    # Sanitiza o parâmetro 'product'
+    if product:
+        product_sanitized = str(product).strip().lower()
+        if product_sanitized in ['todos os produtos', 'todos', 'all', 'all products', '']:
+            product = None
     if product is not None:
         df = df[df["product"] == product]
     

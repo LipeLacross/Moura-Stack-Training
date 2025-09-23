@@ -1,156 +1,177 @@
-## 🌐 [English Version of README](README_EN.md)
+## 🇧🇷 [Versão em Português](README.md)
 
 # Moura-Stack-Training
 
-Projeto-portfólio desenvolvido para demonstrar competências técnicas em **APIs (FastAPI)**, **dashboard em Jinja**, **SQL avançado em PostgreSQL** (consultas, trigger, procedure), **ETL com Prefect**, **Big Data com PySpark**, **exportações em Parquet/CSV e Excel**, além de **modelagem analítica com dbt**.  
-O projeto também integra **Power BI embed**, estatística (Pearson/OLS) e machine learning (regressão linear com Scikit-learn).  
+Portfolio project showcasing **APIs (FastAPI)**, **dashboard (Jinja + Tailwind + Chart.js/Plotly/D3)**, **PostgreSQL SQL** (queries, *trigger*, *procedure*), **ETL (Prefect/pandas)**, **Big Data (PySpark)**, **exports (CSV/Parquet/Excel)**, and **analytics modeling (dbt)**, with optional **Power BI** embedding. The Dockerfile includes **Java 17** to enable Spark.
 
 ---
 
-## 🔨 Funcionalidades do Projeto
-- **API REST (FastAPI)**  
-  Endpoints: `/health`, `/metrics/sales`, `/metrics/summary`, `/stats/pearson`, `/stats/ols`, `/ml/train`, `/ml/predict`, `/etl/run`, `/gold/export`, `/export/excel`, `/spark/run`.
-- **Dashboard Jinja** com KPIs, gráficos interativos (Plotly) e estáticos (Matplotlib/Seaborn).
-- **Banco de Dados PostgreSQL**: tabela `sales`, trigger `set_total` e procedure `upsert_product_revenue`.
-- **ETL com Prefect**: fluxo para gerar Parquet/CSV (camada Gold).
-- **PySpark**: job para processamento em larga escala.
-- **Export Excel**: endpoint usando OpenPyXL.
-- **dbt**: modelos `stg_sales` (silver) e `fct_sales` (gold).
-- **Infraestrutura**: Docker/Docker Compose prontos para uso.
+## 🔨 Project Features
+
+* **REST API (FastAPI)**
+  Ready-to-use endpoints:
+
+  * `GET /` — Dashboard (Jinja)
+
+  * `GET /api/sales` — Sales with filters, sorting, and pagination
+
+  * `GET /api/summary` — KPIs (revenue, quantity, AOV, top products)
+
+  * `GET /api/charts/revenue` — Time series (week/month/year)
+
+  * `GET /api/charts/categories` — Top categories/products
+
+  > **Note**: the dashboard template references `/metrics/*` for filters/preview. If you don’t expose the `metrics` routers, adjust the frontend to call `/api/*`.
+* **Jinja Dashboard** with KPIs, paginated table, areas for interactive charts (Chart.js/Plotly/D3) and generated images (Matplotlib/Seaborn/Stats).
+* **PostgreSQL**: `sales` table + example *trigger/procedure* in `sql/01_init.sql`.
+* **ETL with Prefect/pandas**: CSV/Parquet (Gold layer) and utilities.
+* **PySpark**: aggregation job (requires Java 17).
+* **Excel Export**: export endpoint (in `extras` router when enabled).
+* **dbt**: `stg_sales` (silver) and `fct_sales` (gold).
+* **Infra**: Docker/Docker Compose ready.
 
 ---
 
-### 📸 Exemplo Visual do Projeto
-	
+### 📸 Visual Example of the Project
+
 <div align="center">
-  <img src="docs/screenshot-dashboard-1.png" alt="Screenshot 2025-07-03 132707" width="80%" style="margin: 16px 0; border-radius: 10px;">
-  <img src="docs/screenshot-dashboard-2.png" alt="Screenshot 2025-07-03 130932" width="80%" style="margin: 16px 0; border-radius: 10px;">
+  <img src="https://github.com/user-attachments/assets/e695f2c7-664c-40f1-8d81-005403694197" alt="Screen recording — dashboard demo" width="80%" style="margin: 16px 0; border-radius: 10px;">
 </div>
 
 ---
 
-## ✔️ Técnicas e Tecnologias Utilizadas
-- **Linguagem:** Python 3.11+
-- **Backend:** FastAPI, Pydantic, Uvicorn, SQLAlchemy
-- **Banco de Dados:** PostgreSQL (psycopg2)
-- **Frontend/BI:** Jinja + Power BI embed
-- **Análises:** Pandas, NumPy, Plotly, Matplotlib, Seaborn, Statsmodels
-- **ML:** Scikit-learn (Regressão Linear)
-- **ETL/Big Data:** Prefect, PySpark, Parquet (PyArrow)
-- **Modelagem de Dados:** dbt
-- **Dev/Qualidade:** Black, Ruff, Docker
+## ✔️ Technologies
+
+* **Language:** Python 3.11+
+* **Backend:** FastAPI, Pydantic, Uvicorn, SQLAlchemy
+* **Database:** PostgreSQL (psycopg2)
+* **Frontend/BI:** Jinja + Power BI embed
+* **Analytics:** pandas, NumPy, Plotly, Matplotlib, Seaborn, statsmodels, Chart.js, D3.js
+* **ML:** scikit-learn (Linear Regression)
+* **ETL/Big Data:** Prefect, PySpark, Parquet (PyArrow)
+* **Data Modeling:** dbt
+* **Dev/Quality:** Black, Docker
 
 ---
 
-## 📁 Estrutura do Projeto
-- **app/backend/**
-  - `main.py`: instancia FastAPI, configurações, dashboard Jinja
-  - `db.py`: conexão com PostgreSQL via SQLAlchemy
-  - `models.py`: schemas Pydantic
-  - **routers/**
-    - `health.py`: rota `/health`
-    - `metrics.py`: métricas `/metrics/sales`, `/metrics/summary`
-    - `stats.py`: estatística `/stats/pearson`, `/stats/ols`
-    - `ml.py`: machine learning `/ml/train`, `/ml/predict`
-    - `etl.py`: execução `/etl/run`
-    - `gold.py`: export `/gold/export`
-    - `extras.py`: `/export/excel`, `/spark/run`
-    - `flow_etl.py`: fluxo Prefect
-    - `spark_job.py`: job PySpark
-- **app/templates/**
-  - `base.html`: layout base
-  - `dashboard.html`: dashboard interativo
-- **data/**
-  - `sample_sales.csv`: dados de exemplo
-- **dbt/**
-  - `dbt_project.yml`: configuração
-  - `stg_sales.sql`: camada silver
-  - `fct_sales.sql`: camada gold
-- **sql/**
-  - `01_init.sql`: tabela, trigger e procedure
-- **infraestrutura**
-  - `requirements.txt`, `pyproject.toml`
-  - `Dockerfile`, `docker-compose.yml`
-  - `.env` e `.env.example`
+## 📁 Project Structure
+
+* **app/backend/**
+
+  * `main.py` — FastAPI app, static mount, dashboard, `/api/*` endpoints
+  * `db.py` — engine/Session and simple health check
+  * `models.py` — Pydantic schemas (Sales/Metric/Health, etc.)
+* **app/core/**
+
+  * `config.py` — (reserved for settings)
+  * `utils.py` — `init_db_if_needed`, `ensure_sales_schema`, logging utils
+* **app/services/**
+
+  * `data.py`, `etl.py`, `metrics.py`, `ml.py`, `stats.py` — CSV/DB loading, KPIs, Pearson/OLS, train/predict
+* **app/templates/**
+
+  * `base.html`, `dashboard.html` — layout + filters + KPIs + table + charts
+* **data/**
+
+  * `sample_sales.csv` — sample dataset
+* **dbt/**
+
+  * `dbt_project.yml`, `models/stg_sales.sql`, `models/fct_sales.sql`
+* **scripts/generate\_charts/**
+
+  * `matplotlib_chart.py`, `plotly_chart.py`, `seaborn_chart.py`, `statistics_chart.py`, `ml_regression.py`, `pyspark_agg.py`
+* **sql/**
+
+  * `01_init.sql` — schema and SQL objects examples
+* **public/**
+
+  * `moura-logo.ico`, `moura-logo-1-2048x1651.png`, `matplotlib.png`, `plotly.png`, `seaborn.png`, `statistics.png`
+* **Infra**
+
+  * `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `pyproject.toml`, `.env(.example)`
 
 ---
 
-## 🛠️ Abrir e rodar o projeto
-Para iniciar o projeto localmente, siga os passos abaixo:
+## 🛠️ Getting Started
 
-1. **Pré-requisitos**
-   - Python 3.11+
-   - PostgreSQL instalado
-   - (Opcional) Docker/Docker Compose
-   - (Opcional) Java 17 para PySpark
+1. **Prerequisites**
 
-2. **Clone o Repositório**
-   ```bash
-   git clone <URL_DO_REPOSITORIO>
-   cd moura-stack-training
+   * Python 3.11+
+   * PostgreSQL
+   * (Optional) Docker/Docker Compose
+   * (Optional) Java 17 for PySpark (already included in Docker)
 
-3. **Configuração do ambiente**
+2. **Clone the Repository**
 
-   ```bash
-   python -m venv .venv
-   . .venv/bin/activate   # Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   cp .env.example .env
-   ```
+```bash
+git clone <REPOSITORY_URL>
+cd moura-stack-training
+```
 
-   * Configure no `.env`:
+3. **Environment Setup**
 
-     * `DATABASE_URL=postgresql+psycopg2://user:pass@host:5432/dbname`
-     * `ETL_SOURCE=csv` ou `postgres`
-     * `POWER_BI_EMBED_URL=...`
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+```
 
-4. **Rodar o Banco**
+Edit `.env`:
 
-   ```bash
-   psql "postgresql://user:pass@host:5432/dbname" -f sql/01_init.sql
-   ```
+* `DATABASE_URL=postgresql+psycopg2://user:pass@host:5432/dbname`
+* `ETL_SOURCE=csv` (or `postgres`)
+* `POWER_BI_EMBED_URL=` (optional)
 
-5. **Iniciar o Backend**
+> **Tip**: if you **don’t** have `sql/02_reset_sales.sql`, set `DB_AUTO_INIT=false` to avoid automatic reset attempts.
 
-   ```bash
-   uvicorn app.backend.main:app --reload --port 8000
-   # http://localhost:8000/docs
-   ```
+4. **Initialize the Database (base schema)**
 
-6. **Dashboard Jinja**
+```bash
+psql "postgresql://user:pass@host:5432/dbname" -f sql/01_init.sql
+```
 
-   ```
-   http://localhost:8000/dashboard
-   ```
+5. **Run the Backend**
 
-7. **ETL & Exportações**
+```bash
+uvicorn app.backend.main:app --reload --port 8000
+# Docs:      http://localhost:8000/docs
+# Dashboard: http://localhost:8000/
+```
 
-   ```bash
-   curl -X POST http://localhost:8000/etl/run
-   curl -X POST http://localhost:8000/gold/export
-   curl -X POST http://localhost:8000/export/excel
-   ```
+6. **Dashboard (Jinja)**
+   The home page `/` loads KPIs, table, and filters.
 
-8. **Rodar Spark (opcional)**
+> **Heads-up**: if the frontend filters point to `/metrics/*`, switch them to `/api/*` (or add the corresponding routers).
 
-   ```bash
-   python app/backend/spark_job.py
-   ```
+7. **ETL & Exports (examples)**
+
+```bash
+curl -X POST http://localhost:8000/etl/run
+curl -X POST http://localhost:8000/gold/export
+curl -X POST http://localhost:8000/export/excel
+```
+
+8. **Run Spark (optional)**
+
+```bash
+python scripts/generate_charts/pyspark_agg.py
+```
 
 ---
 
 ## 🌐 Deploy
 
-* **Docker local**
+* **Docker (local)**
 
-  ```bash
-  docker compose up --build
-  ```
+```bash
+docker compose up --build
+```
 
-* **Nuvem**
+* **Cloud**
 
-  * **API**: deploy via Docker em serviços como Railway, Render, Fly.io ou AWS ECS.
-  * **Banco**: use PostgreSQL gerenciado (RDS, CloudSQL, Azure).
-  * **Power BI**: configure `POWER_BI_EMBED_URL`.
-  * **dbt**: aponte para o Postgres da nuvem e rode `dbt run`.
-
+  * **API**: publish the Docker image (Railway, Render, Fly.io, AWS ECS, etc.).
+  * **Database**: use a managed PostgreSQL (RDS/CloudSQL/Azure).
+  * **dbt**: point to the cloud Postgres and run `dbt run`.
+  * **Power BI**: set `POWER_BI_EMBED_URL`.

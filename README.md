@@ -12,9 +12,13 @@ Projeto-portfólio para demonstrar competências em **APIs (FastAPI)**, **dashbo
   Endpoints prontos:
 
   * `GET /` — Dashboard (Jinja)
+
   * `GET /api/sales` — Vendas com filtros, ordenação e paginação
+
   * `GET /api/summary` — KPIs (receita, quantidade, ticket médio, top produtos)
+
   * `GET /api/charts/revenue` — Série temporal (semana/mês/ano)
+
   * `GET /api/charts/categories` — Top categorias/produtos
 
   > **Nota**: o template do dashboard referencia `/metrics/*` para filtros/preview. Se você não publicar os *routers* de `metrics`, ajuste o front para usar os endpoints `/api/*`.
@@ -31,8 +35,7 @@ Projeto-portfólio para demonstrar competências em **APIs (FastAPI)**, **dashbo
 ### 📸 Exemplo Visual do Projeto
 
 <div align="center">
-  <img src="docs/screenshot-dashboard-1.png" alt="Screenshot 2025-07-03 132707" width="80%" style="margin: 16px 0; border-radius: 10px;">
-  <img src="docs/screenshot-dashboard-2.png" alt="Screenshot 2025-07-03 130932" width="80%" style="margin: 16px 0; border-radius: 10px;">
+  <img src="https://github.com/user-attachments/assets/e695f2c7-664c-40f1-8d81-005403694197" alt="Screen recording — demo do dashboard" width="80%" style="margin: 16px 0; border-radius: 10px;">
 </div>
 
 ---
@@ -61,7 +64,7 @@ Projeto-portfólio para demonstrar competências em **APIs (FastAPI)**, **dashbo
 * **app/core/**
 
   * `config.py` — (reservado para *settings*)
-  * `utils.py` — *init\_db\_if\_needed*, *ensure\_sales\_schema*, logs util
+  * `utils.py` — `init_db_if_needed`, `ensure_sales_schema`, logs util
 * **app/services/**
 
   * `data.py`, `etl.py`, `metrics.py`, `ml.py`, `stats.py` — carregamento CSV/DB, KPIs, Pearson/OLS, treino/predict
@@ -86,7 +89,6 @@ Projeto-portfólio para demonstrar competências em **APIs (FastAPI)**, **dashbo
 * **Infraestrutura**
 
   * `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `pyproject.toml`, `.env(.example)`
-
 
 ---
 
