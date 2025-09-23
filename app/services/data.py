@@ -136,3 +136,45 @@ def compute_summary(df: pd.DataFrame) -> Dict[str, Any]:
         "start_date": start_date,
         "end_date": end_date,
     }
+
+def compute_pearson(df: pd.DataFrame) -> Dict[str, float]:
+    """
+    Calcula a correlação de Pearson entre quantidade e preço unitário.
+    Args:
+        df: DataFrame com as colunas 'quantity' e 'unit_price'
+    Returns:
+        Dicionário com o coeficiente de Pearson e o valor-p
+    """
+    if len(df) < 2:
+        return {"pearson_r": 0.0, "p_value": 1.0}
+    try:
+        from scipy.stats import pearsonr
+        r, p = pearsonr(df["quantity"], df["unit_price"])
+        return {"pearson_r": float(r), "p_value": float(p)}
+    except Exception as e:
+        logging.error(f"Erro ao calcular correlação de Pearson: {e}")
+        return {"pearson_r": 0.0, "p_value": 1.0}
+
+def compute_ols(df: pd.DataFrame) -> Dict[str, float]:
+    """
+    Realiza uma regressão linear (OLS) entre quantidade e preço unitário.
+    Args:
+        df: DataFrame com as colunas 'quantity' e 'unit_price'
+    Returns:
+        Dicionário com coeficiente angular, intercepto e R²
+    """
+    if len(df) < 2:
+        return {"slope": 0.0, "intercept": 0.0, "r2": 0.0}
+    try:
+        import statsmodels.api as sm
+        X = df["quantity"]
+        y = df["unit_price"]
+        X = sm.add_constant(X)
+        model = sm.OLS(y, X).fit()
+        slope = float(model.params["quantity"]) if "quantity" in model.params else 0.0
+        intercept = float(model.params["const"]) if "const" in model.params else 0.0
+        r2 = float(model.rsquared)
+        return {"slope": slope, "intercept": intercept, "r2": r2}
+    except Exception as e:
+        logging.error(f"Erro ao calcular OLS: {e}")
+        return {"slope": 0.0, "intercept": 0.0, "r2": 0.0}
