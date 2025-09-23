@@ -45,12 +45,12 @@ def load_sales_df(use_cache: bool = True, start_date: str = None, end_date: str 
     logging.info(f"[DEBUG] Valor final do filtro de produto: {product}")  # TODO(copilot, 2025-09-22, debug filtro): Remover após validação
 
     # Verifica se pode usar o cache
-    # Só usa cache se NÃO houver filtros
+    cache_applicable = not start_date and not end_date and (not product or str(product).strip().lower() in ['todos os produtos', 'todos', 'all', 'all products', ''])
     if use_cache and _CACHED_DATA is not None and _LAST_UPDATE is not None:
         cache_age = datetime.now() - _LAST_UPDATE
-        if cache_age < timedelta(minutes=CACHE_TTL_MINUTES):
-            if not start_date and not end_date and (not product or product.lower() == 'todos os produtos'):
-                return _CACHED_DATA.copy()
+        if cache_applicable and cache_age < timedelta(minutes=CACHE_TTL_MINUTES):
+            logging.info('[DEBUG] Usando cache de vendas (todos os produtos, sem datas)')
+            return _CACHED_DATA.copy()
 
     # Carrega os dados da fonte
     source = os.getenv("ETL_SOURCE", "csv")
@@ -94,10 +94,10 @@ def load_sales_df(use_cache: bool = True, start_date: str = None, end_date: str 
         # Se não houver coluna de data, cria uma com a data atual
         df['date'] = pd.to_datetime('today')
     
-    # Atualiza o cache
-    _CACHED_DATA = df.copy()
-    _LAST_UPDATE = datetime.now()
-    
+    # Atualiza o cache apenas se não houver filtros
+    if cache_applicable:
+        _CACHED_DATA = df.copy()
+        _LAST_UPDATE = datetime.now()
 
     return df
 
