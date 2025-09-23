@@ -241,7 +241,8 @@ def get_sales_data(
         product_sanitized = str(product).strip().lower()
         if product_sanitized in ['todos os produtos', 'todos', 'all', 'all products', '']:
             product = None
-    if product is not None:
+    # Aplica filtro SOMENTE se product for válido
+    if product is not None and product != '':
         df = df[df["product"] == product]
     
     if region is not None and "region" in df.columns:
@@ -314,7 +315,8 @@ def get_sales_by_period(
         product_sanitized = str(product).strip().lower()
         if product_sanitized in ['todos os produtos', 'todos', 'all', 'all products', '']:
             product = None
-    if product is not None:
+    # Aplica filtro SOMENTE se product for válido
+    if product is not None and product != '':
         df = df[df["product"] == product]
     
     if df.empty:
