@@ -40,6 +40,8 @@ def load_sales_df(use_cache: bool = True, start_date: str = None, end_date: str 
         product_sanitized = str(product).strip().lower()
         if product_sanitized in ['todos os produtos', 'todos', 'all', 'all products', '']:
             product = None
+        else:
+            product = product.strip()
     logging.info(f"[DEBUG] Valor final do filtro de produto: {product}")  # TODO(copilot, 2025-09-22, debug filtro): Remover após validação
 
     # Verifica se pode usar o cache
@@ -241,6 +243,8 @@ def get_sales_data(
         product_sanitized = str(product).strip().lower()
         if product_sanitized in ['todos os produtos', 'todos', 'all', 'all products', '']:
             product = None
+        else:
+            product = product.strip()
     # Aplica filtro SOMENTE se product for válido
     if product is not None and product != '':
         df = df[df["product"] == product]
