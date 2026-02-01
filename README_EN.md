@@ -1,4 +1,5 @@
-## 🇧🇷 [Versão em Português](README.md)
+## 🌐🇧🇷 [Portuguese Version of README](README.md)
+## 🌐🇺🇸 [English Version of README](README_EN.md)
 
 # Moura-Stack-Training
 
