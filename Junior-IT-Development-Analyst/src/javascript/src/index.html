@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moura TI - Automação de Processos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+    <main class="container">
+        <header style="text-align:center;padding:2rem">
+            <h1>Moura TI</h1>
+            <p>Sistema de Automação e Monitoramento de Processos</p>
+        </header>
+
+        <section id="dashboard">
+            <h2>Dashboard</h2>
+            <div class="grid" id="kpi-container">
+                <article><h3 id="total-processos">0</h3><small>Total Processos</small></article>
+                <article><h3 id="concluidos">0</h3><small>Concluídos</small></article>
+                <article><h3 id="pendentes">0</h3><small>Pendentes</small></article>
+                <article><h3 id="andamento">0</h3><small>Em Andamento</small></article>
+            </div>
+            <canvas id="chart-processos" height="80"></canvas>
+        </section>
+
+        <section id="processos">
+            <h2>Processos</h2>
+            <article>
+                <form id="form-processo">
+                    <div class="grid">
+                        <input type="text" id="nome-processo" placeholder="Nome do processo" required>
+                        <input type="text" id="descricao-processo" placeholder="Descrição" required>
+                        <input type="text" id="responsavel-processo" placeholder="Responsável">
+                        <button type="submit">Criar Processo</button>
+                    </div>
+                </form>
+            </article>
+            <table id="tabela-processos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Status</th>
+                        <th>Responsável</th>
+                        <th>Criado em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="processos-body"></tbody>
+            </table>
+        </section>
+
+        <section id="integracao">
+            <h2>Integração entre Sistemas</h2>
+            <article>
+                <form id="form-integracao">
+                    <div class="grid">
+                        <select id="origem">
+                            <option value="">Sistema Origem</option>
+                            <option value="sap">SAP ERP</option>
+                            <option value="powerbi">Power BI</option>
+                            <option value="sql-database">Banco SQL</option>
+                        </select>
+                        <select id="destino">
+                            <option value="">Sistema Destino</option>
+                            <option value="sap">SAP ERP</option>
+                            <option value="powerbi">Power BI</option>
+                            <option value="sql-database">Banco SQL</option>
+                        </select>
+                        <input type="text" id="payload-integracao" placeholder='{"items": [{"id": 1}]}'>
+                        <button type="submit">Sincronizar</button>
+                    </div>
+                </form>
+                <pre id="resultado-integracao"></pre>
+            </article>
+        </section>
+    </main>
+
+    <script src="api-client.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

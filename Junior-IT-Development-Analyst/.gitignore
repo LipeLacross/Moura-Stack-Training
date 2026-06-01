@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+
+# Node
+node_modules/
+package-lock.json
+
+# Environment
+.env
+*.env.local
+
+# Data
+data/*.csv
+!data/sample/*.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# ML models
+ml/models/*.pkl
+ml/models/*.h5
+
+# Logs
+*.log
+logs/

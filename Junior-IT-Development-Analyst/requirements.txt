@@ -1,0 +1,35 @@
+# Core
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.3
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+
+# Data & ML
+pandas==2.2.3
+numpy==2.2.0
+scikit-learn==1.6.0
+scipy==1.14.1
+imbalanced-learn==0.12.4
+
+# ETL
+prefect==3.0.7
+pyarrow==18.1.0
+
+# LLM
+openai==1.56.0
+
+# Dashboard
+streamlit==1.40.2
+plotly==5.25.0
+matplotlib==3.9.3
+seaborn==0.13.2
+
+# Automation
+schedule==1.2.2
+python-dotenv==1.0.1
+httpx==0.28.1
+
+# Testing
+pytest==8.3.4
+pytest-cov==6.0.0

@@ -1,0 +1,11 @@
+id,data_registro,produto,quantidade,valor_unitario,regiao,canal_venda,eficiencia
+1,2024-01-01 08:00:00,Bateria Automotiva,45,250.50,Sudeste,Distribuidor,92.3
+2,2024-01-01 09:00:00,Bateria Estacionária,12,380.00,Nordeste,Direta,88.7
+3,2024-01-01 10:00:00,Bateria Industrial,8,450.00,Sul,Distribuidor,95.1
+4,2024-01-02 08:00:00,Bateria Automotiva,52,245.00,Norte,Distribuidor,85.4
+5,2024-01-02 09:00:00,Bateria Estacionária,15,395.00,Centro-Oeste,E-commerce,91.2
+6,2024-01-02 10:00:00,Bateria Industrial,10,470.00,Sudeste,Direta,78.9
+7,2024-01-03 08:00:00,Bateria Automotiva,38,260.00,Nordeste,E-commerce,93.8
+8,2024-01-03 09:00:00,Bateria Estacionária,20,370.00,Sul,Distribuidor,87.5
+9,2024-01-03 10:00:00,Bateria Industrial,6,490.00,Norte,Direta,82.3
+10,2024-01-04 08:00:00,Bateria Automotiva,55,240.00,Centro-Oeste,Distribuidor,90.1

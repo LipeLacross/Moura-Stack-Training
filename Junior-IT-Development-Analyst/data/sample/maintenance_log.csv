@@ -1,0 +1,11 @@
+id,maquina,data_manutencao,tipo,tecnico,duracao_horas,custo,status
+1,M-A,2024-01-05,preventiva,João Silva,4,850.00,concluido
+2,M-B,2024-01-07,corretiva,Maria Santos,8,2500.00,concluido
+3,M-C,2024-01-10,preventiva,Carlos Lima,3,750.00,concluido
+4,M-A,2024-01-15,corretiva,João Silva,6,1800.00,concluido
+5,M-B,2024-01-20,preventiva,Ana Costa,4,800.00,concluido
+6,M-C,2024-01-25,preventiva,Maria Santos,5,900.00,pendente
+7,M-A,2024-02-01,preventiva,Carlos Lima,4,820.00,concluido
+8,M-B,2024-02-05,corretiva,João Silva,10,3200.00,concluido
+9,M-C,2024-02-10,preventiva,Ana Costa,3,780.00,concluido
+10,M-A,2024-02-15,corretiva,Maria Santos,7,2100.00,pendente

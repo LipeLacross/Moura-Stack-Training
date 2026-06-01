@@ -1,0 +1,13 @@
+{
+  "name": "moura-ti-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para API de automação Moura TI",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "npx http-server src -p 3000 -c-1",
+    "dev": "npx http-server src -p 3000 -c-1 -o"
+  },
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}
