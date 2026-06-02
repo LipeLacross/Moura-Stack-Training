@@ -1,0 +1,16 @@
+.serena/
+/.idea/
+/.serena/
+directory_listing.txt
+directory_tree.txt
+tk_super_v9.py
+*.DS_Store
+*.log
+node_modules/
+dist/
+build/
+*.local
+.env
+.env.local
+.DS_Store
+Thumbs.db
